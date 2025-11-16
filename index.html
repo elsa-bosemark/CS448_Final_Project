@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Obesity Crisis</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-geo.v3.min.js"></script>
+  <script src="https://d3js.org/topojson.v3.min.js"></script>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Hero Section -->
+    <section id="hero-section" class="hero-section">
+      <div class="hero-content">
+        <h1 class="hero-title">Running in Place:<br>The Myth Around Solving Obesity</h1>
+        <p class="card-text">Obesity has surged around the world for more than forty years. Before exploring possible explanations, it's worth seeing the trend for yourself, and how different countries have moved along it.</p>
+        <div class="scroll-cta">
+          <button id="explore-now-btn" class="explore-now-btn">
+            <span class="explore-text">Explore Now</span>
+            <div class="explore-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#f4d9a6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5 L12 19 M6 13 L12 19 L18 13"/>
+              </svg>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Map Section -->
+    <section id="map-section" class="graph-section">
+      <div class="split-layout">
+        <div class="graph-side">
+          <div class="chart-wrapper">
+            <div id="world-map"></div>
+            <div class="trend-section-divider">
+              <div id="multi-country-trend"></div>
+            </div>
+          </div>
+        </div>
+        <div class="content-side">
+          <div class="content-card active" data-step="0">
+            <div class="card-content">
+              <div class="step-indicator">1/4</div>
+              <p class="card-text">
+                Obesity rates vary dramatically around the world. Some countries have rates below 5%, while others exceed 35%.
+              </p>
+              <div class="timeline-controls">
+                <button id="play-btn" class="play-btn">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path id="play-icon" d="M8 5v14l11-7z"/>
+                    <path id="pause-icon" d="M6 4h4v16H6zm8 0h4v16h-4z" style="display: none;"/>
+                  </svg>
+                  <span id="play-text">Play Timeline</span>
+                </button>
+                <div class="year-display">
+                  <span id="current-year">2022</span>
+                </div>
+              </div>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="map-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="map-section">Next →</button>
+              </div>
+            </div>
+          </div>
+          <div class="content-card" data-step="1">
+            <div class="card-content">
+              <div class="step-indicator">2/6</div>
+              <p class="card-text">
+                Over the past 50 years, obesity has been rapidly increasing worldwide, especially in developed nations.
+              </p>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="map-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="map-section">Next →</button>
+              </div>
+            </div>
+          </div>
+          <div class="content-card" data-step="2">
+            <div class="card-content">
+              <div class="step-indicator">3/6</div>
+              <p class="card-text card-text-bold">
+                The United States has one of the highest obesity rates in the world at <span class="text-highlight">36.2%</span>.
+              </p>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="map-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="map-section">Next →</button>
+              </div>
+            </div>
+          </div>
+          <div class="content-card" data-step="3">
+            <div class="card-content">
+              <div class="step-indicator">4/4</div>
+              <h4 class="card-title">Customize Trends</h4>
+              <div class="trend-filters-in-card">
+                <div class="filter-group">
+                  <label class="filter-label">Age Group:</label>
+                  <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="age" data-value="adults">Adults</button>
+                    <button class="filter-btn" data-filter="age" data-value="children">Children</button>
+                  </div>
+                </div>
+                <div class="filter-group">
+                  <label class="filter-label">Countries:</label>
+                  <div class="country-checkboxes" id="country-filters"></div>
+                </div>
+                <div class="filter-group">
+                  <label class="filter-label">Year Range:</label>
+                  <div class="year-range-controls">
+                    <input type="range" id="year-start" min="1975" max="2022" value="1975" step="5">
+                    <span id="year-start-label">1975</span>
+                    <span>to</span>
+                    <input type="range" id="year-end" min="1975" max="2022" value="2022" step="5">
+                    <span id="year-end-label">2022</span>
+                  </div>
+                </div>
+              </div>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="map-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="map-section">Next →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Combined Question Section -->
+    <section id="combined-question-section" class="graph-section">
+      <div class="split-layout question-split-layout">
+        <div class="question-card-side">
+          <div class="content-card active" data-step="0">
+            <div class="card-content question-card-content">
+              <div class="step-indicator">1/2</div>
+              <h2 class="section-heading">Energy balance: what has changed?</h2>
+              <p class="card-text">
+                At its core, obesity occurs when energy intake is consistently higher than energy expenditure. The harder question is which side of this balance has changed in modern populations. Public health organizations typically point to two possibilities: people may be burning less energy through daily activity, or they may be consuming more energy as diets shift.
+              </p>
+              <h3 class="subsection-heading">What the public believes</h3>
+              <p class="card-text">
+                Before looking at the data, it helps to understand public perception.
+              </p>
+              <h2 class="question-title">What do Americans say is the main reason many people are very overweight today?</h2>
+              <p class="question-subtitle">Choose the option you think Americans select most often:</p>
+              <div class="options-container">
+                <button class="option-button" data-option="exercise">Not getting enough exercise</button>
+                <button class="option-button" data-option="diet">Eating too much or lack of willpower</button>
+                <button class="option-button" data-option="food">The kinds of foods available or marketed</button>
+                <button class="option-button" data-option="genetics">Genetics and hereditary factors</button>
+              </div>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="combined-question-section" disabled>← Previous</button>
+                <button class="nav-btn next-btn" data-section="combined-question-section" id="belief-next-btn" disabled>Next →</button>
+              </div>
+            </div>
+          </div>
+          <div class="content-card" data-step="1">
+            <div class="card-content question-card-content">
+              <div class="step-indicator">2/2</div>
+              <h3 class="card-title">A common hypothesis: lower activity in industrialized societies</h3>
+              <p class="card-text">
+                One hypothesis is that industrialized countries are less physically active than traditional farming or foraging groups, and that activity levels may have changed as societies modernized. Yet a recently published study challenged this hypothesis.
+              </p>
+              <div id="belief-result" class="result-message"></div>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="combined-question-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="combined-question-section">Next →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Inactivity Bar Chart Section -->
+    <section id="inactivity-section" class="graph-section">
+      <div class="split-layout">
+        <div class="graph-side">
+          <div class="chart-wrapper">
+            <div class="chart-header">
+              <h3 class="chart-title" id="inactivity-chart-title">TEE by Economy Type</h3>
+            </div>
+            <div class="chart-controls-row" id="metric-selector-container" style="display: none;">
+              <div class="left-controls">
+                <span class="control-label-inline">Y-axis metric:</span>
+                <div class="metric-toggle">
+                  <button class="metric-toggle-btn active" data-metric="tee">TEE</button>
+                  <button class="metric-toggle-btn" data-metric="pal">PAL</button>
+                </div>
+                <label class="checkbox-control" id="raw-data-control">
+                  <input type="checkbox" id="show-raw-data-checkbox" checked>
+                  <span>Show raw data:</span>
+                </label>
+              </div>
+              <div class="view-tabs">
+                <button class="view-tab" data-view="scatter">Scatterplot</button>
+                <button class="view-tab active" data-view="box">Box Plot</button>
+              </div>
+            </div>
+            <div id="inactivity-chart"></div>
+          </div>
+        </div>
+        <div class="content-side">
+          <div class="content-card active" data-step="0">
+            <div class="card-content">
+              <div class="step-indicator">1/6</div>
+              <h4 class="card-title">Where the data was collected and processed</h4>
+              <p class="card-text">
+                A team analyzed <strong>4,213 adults</strong> from <strong>34 populations</strong> across six continents. These groups ranged from hunter-gatherer and small-scale farming communities to fully industrialized societies. The goal was to measure energy expenditure across this economic spectrum and see how it relates to body fat.
+              </p>
+              <h4 class="card-subtitle">Data collection locations:</h4>
+              <p class="card-text">
+                The map below shows where data was collected from the 34 different populations. Each point represents a population group, color-coded by their economic development level according to the Human Development Index (HDI):
+              </p>
+              <ul class="card-list">
+                <li><strong>Hunter-gatherer</strong> societies (red dots)</li>
+                <li><strong>Agropastoralist</strong> communities (orange dots)</li>
+                <li><strong>Horticulturalist</strong> groups (yellow-green dots)</li>
+                <li><strong>Low HDI</strong> countries (teal dots)</li>
+                <li><strong>Mid HDI</strong> countries (light blue dots)</li>
+                <li><strong>High HDI</strong> countries (dark blue dots)</li>
+              </ul>
+              <h4 class="card-subtitle">Data processing:</h4>
+              <p class="card-text">
+                From the initial dataset of 10,590 adults, researchers filtered for participants with known sex and no health conditions, removed athletes, and focused on ages 18-60. This left 4,213 adults whose basal energy expenditure was measured. For each population, researchers calculated mean values for <strong>total energy expenditure (TEE)</strong>, <strong>basal energy expenditure (BEE)</strong>, and <strong>activity energy expenditure (AEE)</strong>.
+              </p>
+              <p class="card-note">
+                Note: While the research paper had access to individual-level data, only population means were made publicly available, which is what we used for our visualizations.
+              </p>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
+              </div>
+            </div>
+          </div>
+          <div class="content-card" data-step="1">
+            <div class="card-content">
+              <div class="step-indicator">2/6</div>
+              <h4 class="card-title">Total energy expenditure (TEE)</h4>
+              <p class="card-text">
+                Here we plot population-level means (because the individual data are not available publicly). When populations are ordered by HDI, the trend between energy expenditure and economic development is not strong. Here we plotted <strong>TEE</strong>, which shows the total amount of energy people burn in a day. The values vary across populations, but much of that variation reflects differences in body size rather than differences in physical activity. Larger bodies naturally burn more energy at rest and during movement, so TEE alone does not give a clear picture of how active these populations actually are.
+              </p>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
+              </div>
+            </div>
+          </div>
+          <div class="content-card" data-step="2">
+            <div class="card-content">
+              <div class="step-indicator">3/6</div>
+              <h4 class="card-title">Physical activity level (PAL)</h4>
+              <p class="card-text">
+                To understand activity more directly, we also look at <strong>PAL</strong>, which adjusts for body size by dividing total energy expenditure by basal metabolic needs. When we examine PAL across the same HDI ordering, the pattern is similar: there is a weak relationship between economic development and activity level. This makes it difficult to argue that large declines in physical activity explain the higher obesity levels seen in more industrialized populations.
+              </p>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
+              </div>
+            </div>
+          </div>
+          <div class="content-card" data-step="3">
+            <div class="card-content">
+              <div class="step-indicator">4/6</div>
+              <h4 class="card-title">Diet data and the role of ultra-processed foods (UPF)</h4>
+              <p class="card-text">
+                While physical activity did not show a strong relationship with obesity in this sample, the dataset also includes limited dietary information for some populations. One major global change in recent decades is the increased availability of ultra-processed foods (UPF). Higher UPF intake has been associated with obesity in multiple studies, although the mechanisms behind this link are still being investigated.
+              </p>
+              <p class="card-text">
+                For this study, UPF intake data were available for a subset of <strong>25 populations</strong>. These values were not measured uniformly by the authors; instead, they were compiled from previously published dietary studies, as listed in the Supplemental Information. Each source provided the percentage of energy intake from UPF for that particular population. Because the dietary data came from different studies, the exact assessment methods varied, including tools like food-frequency questionnaires, 24-hour recalls, or national dietary surveys.
+              </p>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
+              </div>
+            </div>
+          </div>
+          <div class="content-card" data-step="4">
+            <div class="card-content">
+              <div class="step-indicator">5/6</div>
+              <h4 class="card-title">UPF intake and body fat percentage</h4>
+              <p class="card-text">
+                When we plot these values, a consistent pattern appears: populations with a higher percentage of UPF in their diet tend to have higher body-fat percentages. This association holds even though the data are drawn from multiple sources with different dietary methods. While this dataset cannot establish causation, it provides evidence that differences in diet composition may explain more variation in obesity than differences in physical activity alone.
+              </p>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
+              </div>
+            </div>
+          </div>
+          <div class="content-card" data-step="5">
+            <div class="card-content">
+              <div class="step-indicator">6/6</div>
+              <h4 class="card-title">Explore the data yourself</h4>
+              <p class="card-text">
+                Use the controls below to explore different relationships in the data. Select which variables to plot on each axis and filter by economy type and sex to see how different populations compare.
+              </p>
+              <div class="interactive-controls">
+                <div class="control-group">
+                  <label class="control-label">Y variable</label>
+                  <select id="y-variable-select" class="variable-select">
+                    <option value="bodyFat">Fat</option>
+                    <option value="upf">PercUPF</option>
+                    <option value="tee">TEE</option>
+                    <option value="pal">PAL</option>
+                    <option value="hdi_rank">HDI_rank</option>
+                  </select>
+                </div>
+                <div class="control-group">
+                  <label class="control-label">X variable</label>
+                  <select id="x-variable-select" class="variable-select">
+                    <option value="upf">PercUPF</option>
+                    <option value="bodyFat">Fat</option>
+                    <option value="tee">TEE</option>
+                    <option value="pal">PAL</option>
+                    <option value="hdi_rank">HDI_rank</option>
+                  </select>
+                </div>
+                <div class="control-group">
+                  <label class="control-label">Economy</label>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input type="checkbox" class="economy-checkbox" value="highHDI" checked>
+                      <span class="checkbox-color" style="background-color: #3b82f6;"></span>
+                      highHDI
+                    </label>
+                    <label class="checkbox-label">
+                      <input type="checkbox" class="economy-checkbox" value="AGP" checked>
+                      <span class="checkbox-color" style="background-color: #f97316;"></span>
+                      AGP
+                    </label>
+                    <label class="checkbox-label">
+                      <input type="checkbox" class="economy-checkbox" value="midHDI" checked>
+                      <span class="checkbox-color" style="background-color: #dc2626;"></span>
+                      midHDI
+                    </label>
+                    <label class="checkbox-label">
+                      <input type="checkbox" class="economy-checkbox" value="HG" checked>
+                      <span class="checkbox-color" style="background-color: #84cc16;"></span>
+                      HG
+                    </label>
+                    <label class="checkbox-label">
+                      <input type="checkbox" class="economy-checkbox" value="lowHDI" checked>
+                      <span class="checkbox-color" style="background-color: #14b8a6;"></span>
+                      lowHDI
+                    </label>
+                    <label class="checkbox-label">
+                      <input type="checkbox" class="economy-checkbox" value="HORT" checked>
+                      <span class="checkbox-color" style="background-color: #fbbf24;"></span>
+                      HORT
+                    </label>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label class="control-label">Sex</label>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input type="checkbox" class="sex-checkbox" value="M" checked>
+                      Male
+                    </label>
+                    <label class="checkbox-label">
+                      <input type="checkbox" class="sex-checkbox" value="F" checked>
+                      Female
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Conclusion Section -->
+    <section id="conclusion-section" class="conclusion-section">
+      <div class="conclusion-content">
+        <h2 class="conclusion-heading">Conclusion</h2>
+        <p class="conclusion-text">
+          Taken together, these results point to a clearer picture of how obesity varies across populations. Physical activity levels, once adjusted for body size, show only modest differences across economic settings. This makes it unlikely that shifts in daily movement alone explain why some populations have much higher obesity rates than others. The limited dietary data show a more consistent pattern: populations with higher intake of ultra-processed foods tend to have higher body-fat percentages. While this does not prove causation, it suggests that differences in diet composition may help explain variation in obesity more than differences in activity.
+        </p>
+
+        <h2 class="conclusion-heading">Why this matters</h2>
+        <p class="conclusion-text">
+          Understanding which factors align more closely with obesity has direct implications for public health messaging, policy, and resource allocation. If physical activity is only weakly linked to population-level differences in obesity, strategies that rely heavily on encouraging people to "move more" may have limited impact on reducing national obesity levels. In contrast, if dietary patterns—particularly the availability and consumption of ultra-processed foods—show stronger and more consistent associations, then interventions focused on food environments, regulation, and access may be more effective. For policymakers and health organizations, distinguishing between these explanations is essential for designing approaches that match the scale and nature of the problem.
+        </p>
+
+        <h2 class="conclusion-heading">Limitations</h2>
+        <p class="conclusion-text">
+          Several limitations of the dataset and analysis should be noted.
+        </p>
+        <p class="conclusion-text">
+          <strong>Population means only:</strong> The publicly available data include only population-level averages, not individual measurements. This limits the ability to examine within-population variation or model individual-level predictors.
+        </p>
+        <p class="conclusion-text">
+          <strong>Cross-sectional comparisons:</strong> The data compare different populations at one point in time. They do not track changes within the same populations over time, making it difficult to infer temporal trends in activity or diet.
+        </p>
+        <p class="conclusion-text">
+          <strong>Heterogeneous dietary methods:</strong> UPF values were compiled from a variety of published sources. Different studies used different dietary assessment tools—such as 24-hour recalls, food-frequency questionnaires, or national surveys—which introduces variability in how UPF intake was measured.
+        </p>
+        <p class="conclusion-text">
+          <strong>Limited diet coverage:</strong> Dietary information was available for only 25 of the 34 populations. Important comparisons may be missing, and results may not generalize to all groups in the dataset.
+        </p>
+        <p class="conclusion-text">
+          <strong>Observational data:</strong> The associations reported here, including those between UPF and body fat, are correlational. They cannot determine causation or rule out unmeasured variables.
+        </p>
+        <p class="conclusion-text">
+          <strong>Energy-expenditure constraints:</strong> TEE, AEE, and PAL estimates come from different studies and field methods. While doubly labeled water is the gold standard for TEE, its use varies across populations, and methods for estimating PAL differ.
+        </p>
+        <p class="conclusion-text">
+          These limitations do not undermine the core patterns observed, but they clarify the scope of what the data can support. The results highlight the need for more consistent dietary data and longitudinal measurements of energy balance, particularly in rapidly industrializing settings.
+        </p>
+
+        <h2 class="conclusion-heading">Sources</h2>
+        <p class="sources-text" id="source-1">
+          <span class="source-number">[1]</span> Pontzer, Herman, et al. "Energy Expenditure, Dietary Energy Intake, and Body Composition Across Populations." <em>Proceedings of the National Academy of Sciences</em>, vol. 122, no. 3, 2025, e2420902122. <em>PNAS</em>, <a href="https://doi.org/10.1073/pnas.2420902122" target="_blank" rel="noopener noreferrer">https://doi.org/10.1073/pnas.2420902122</a>.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="./js/data.js"></script>
+  <script type="module" src="./js/charts.js"></script>
+  <script type="module" src="./js/scroll.js"></script>
+  <script type="module" src="./js/interactions.js"></script>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
