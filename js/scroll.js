@@ -72,7 +72,7 @@ function updateChart(sectionKey, step) {
       } else if (step === 1) {
         // Card 2: TEE
         state.inactivity.metric = 'tee';
-        if (chartTitle) chartTitle.textContent = 'TEE by Economy Type';
+        if (chartTitle) chartTitle.textContent = 'Total energy expenditure (TEE) by Economy Type';
         if (metricContainer) metricContainer.style.display = 'flex';
         if (metricSelector) metricSelector.value = 'tee';
 
@@ -97,7 +97,7 @@ function updateChart(sectionKey, step) {
       } else if (step === 2) {
         // Card 3: PAL
         state.inactivity.metric = 'pal';
-        if (chartTitle) chartTitle.textContent = 'PAL by Economy Type';
+        if (chartTitle) chartTitle.textContent = 'Physical activity level (PAL) by Economy Type';
         if (metricContainer) metricContainer.style.display = 'flex';
         if (metricSelector) metricSelector.value = 'pal';
 

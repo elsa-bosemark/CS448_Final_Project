@@ -1,4 +1,4 @@
-import { setUserActivityGuess, toggleView, setMetric, toggleRawData, navigateToCard } from './scroll.js';
+import {setUserActivityGuess, toggleView, setMetric, toggleRawData, navigateToCard } from './scroll.js';
 
 export function setupInteractions() {
   const metricToggleBtns = document.querySelectorAll('.metric-toggle-btn');
