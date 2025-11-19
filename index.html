@@ -176,45 +176,80 @@
             <div class="chart-header">
               <h3 class="chart-title" id="inactivity-chart-title">Total energy expenditure (TEE) by Economy Type</h3>
             </div>
-            <div class="chart-controls-row" id="metric-selector-container" style="display: none;">
-
-              <div class="left-controls">
-                <span class="control-label-inline">Y-axis metric:</span>
-                <div class="metric-toggle">
-                  <button class="metric-toggle-btn active" data-metric="tee">TEE</button>
-                  <button class="metric-toggle-btn" data-metric="pal">PAL</button>
-                  <button class="metric-toggle-btn" data-metric="PercUPF">PercUPF</button>
-                  <button class="metric-toggle-btn" data-metric="fat">Body Fat</button>
-                </div>
-                <label class="checkbox-control" id="raw-data-control">
-                  <input type="checkbox" id="show-raw-data-checkbox" checked>
-                  <span>Show raw data:</span>
-                </label>
-              </div>
-              <div class="view-tabs">
-                <button class="view-tab" data-view="scatter">Scatterplot</button>
-                <button class="view-tab active" data-view="box">Box Plot</button>
-              </div>
-
-              
-            </div>
             <div id="inactivity-chart"></div>
+            <div class="chart-controls-row" id="unified-controls-container" style="display: none;">
+              <div class="unified-controls">
+                <div class="control-row">
+                  <div class="control-item">
+                    <label class="control-label-small">Y-axis:</label>
+                    <select id="unified-y-select" class="unified-select">
+                      <option value="TEE">TEE</option>
+                      <option value="PAL">PAL</option>
+                      <option value="PercUPF">UPF %</option>
+                      <option value="Fat" selected>Body Fat</option>
+                      <option value="HDI_score">HDI Score</option>
+                    </select>
+                  </div>
+                  <div class="control-item">
+                    <label class="control-label-small">X-axis:</label>
+                    <select id="unified-x-select" class="unified-select">
+                      <option value="HDI_score" selected>Economy (HDI)</option>
+                      <option value="TEE">TEE</option>
+                      <option value="PAL">PAL</option>
+                      <option value="PercUPF">UPF %</option>
+                      <option value="Fat">Body Fat</option>
+                    </select>
+                  </div>
+                  <div class="control-item">
+                    <label class="control-label-small">Sex:</label>
+                    <div class="sex-toggle">
+                      <label class="toggle-label">
+                        <input type="checkbox" id="unified-male-cb" checked>
+                        <span>M</span>
+                      </label>
+                      <label class="toggle-label">
+                        <input type="checkbox" id="unified-female-cb" checked>
+                        <span>F</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="control-item" id="chart-type-control">
+                    <label class="control-label-small">View:</label>
+                    <div class="view-tabs-wrapper">
+                      <div class="view-tabs">
+                        <button class="view-tab active" data-view="box" id="box-view-btn">Box</button>
+                        <button class="view-tab" data-view="scatter" id="scatter-view-btn">Scatter</button>
+                      </div>
+                      <div class="disabled-tooltip" id="view-disabled-tooltip">Select "Economy (HDI)" as X-axis to enable box plot view</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="control-row">
+                  <div class="population-selector-control">
+                    <label class="control-label-small">Highlight populations:</label>
+                    <div class="population-selector-wrapper">
+                      <select id="population-select" class="unified-select population-select">
+                        <option value="">Select to highlight...</option>
+                      </select>
+                      <div class="selected-populations" id="selected-populations"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="content-side">
 
           <div class="content-card active" data-step="0">
             <div class="card-content">
-              <div class="step-indicator">1/6</div>
+              <div class="step-indicator">1/9</div>
               <h4 class="card-title">Data collection and Filtering</h4>
               <p class="card-text">
-                The map to the left shows where data was collected from the <b>34 different populations </b>. Each point represents a population group, color-coded by their economic development level according to the Human Development Index (HDI).
+                The map to the left shows where data was collected from the <b>34 different populations</b>. Each point represents a population group, color-coded by their economic development level according to the Human Development Index (HDI).
               </p>
               <p class="card-text">
-                The reseach team had an initial dataset of 10,590 adults, and filtered for participants with known sex and no health conditions, removed athletes, and focused on ages 18-60. This left <b>4,213 adults</b>. These groups ranged from hunter-gatherer and small-scale farming communities to fully industrialized societies. The goal was to measure energy expenditure across this economic spectrum and see how it relates to body fat.
-              </p>
-              <p>
-                Note: While the research paper had access to individual-level data, only population means were made publicly available, which is what we used for our visualizations.
+                The research team had an initial dataset of 10,590 adults, and filtered for participants with known sex and no health conditions, removed athletes, and focused on ages 18-60. This left <b>4,213 adults</b>. These groups ranged from hunter-gatherer and small-scale farming communities to fully industrialized societies.
               </p>
               <div class="nav-buttons">
                 <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
@@ -222,13 +257,13 @@
               </div>
             </div>
           </div>
-          
+
           <div class="content-card" data-step="1">
             <div class="card-content">
-              <div class="step-indicator">2/6</div>
+              <div class="step-indicator">2/9</div>
               <h4 class="card-title">Total energy expenditure (TEE)</h4>
-              <p class="card-text">  
-              Here we plotted <strong>TEE</strong>, which shows the total amount of megajoules (MJ) energy people burn in per day. The values vary across populations, but much of that variation reflects differences in body size rather than differences in physical activity. Larger bodies naturally burn more energy at rest and during movement, so TEE alone does not give a clear picture of how active these populations actually are. Another limitation is that we plot population-level means (because the individual data are not available publicly).
+              <p class="card-text">
+                Here we plot <strong>TEE</strong>, showing the total megajoules (MJ) of energy people burn per day across different economy types. The values vary across populations, but much of that variation reflects differences in body size rather than physical activity.
               </p>
               <div class="nav-buttons">
                 <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
@@ -236,12 +271,13 @@
               </div>
             </div>
           </div>
+
           <div class="content-card" data-step="2">
             <div class="card-content">
-              <div class="step-indicator">3/6</div>
+              <div class="step-indicator">3/9</div>
               <h4 class="card-title">Physical activity level (PAL)</h4>
               <p class="card-text">
-                To understand activity more directly, we also look at <strong>PAL</strong>, which adjusts for body size by dividing total energy expenditure by basal metabolic needs. When we examine PAL across the same HDI ordering, the pattern is similar: there is a weak relationship between economic development and activity level. This makes it difficult to argue that large declines in physical activity explain the higher obesity levels seen in more industrialized populations.
+                <strong>PAL</strong> adjusts for body size by dividing total energy expenditure by basal metabolic needs. When we examine PAL across economy types, the pattern is similar: there is a weak relationship between economic development and activity level.
               </p>
               <div class="nav-buttons">
                 <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
@@ -249,15 +285,13 @@
               </div>
             </div>
           </div>
+
           <div class="content-card" data-step="3">
             <div class="card-content">
-              <div class="step-indicator">4/6</div>
-              <h4 class="card-title">Diet data and the role of ultra-processed foods (UPF)</h4>
+              <div class="step-indicator">4/9</div>
+              <h4 class="card-title">Ultra-processed foods (UPF)</h4>
               <p class="card-text">
-                While physical activity did not show a strong relationship with obesity in this sample, the dataset also includes limited dietary information for some populations. One major global change in recent decades is the increased availability of ultra-processed foods (UPF). Higher UPF intake has been associated with obesity in multiple studies, although the mechanisms behind this link are still being investigated.
-              </p>
-              <p class="card-text">
-                For this study, UPF intake data were available for a subset of <strong>25 populations</strong>. These values were not measured uniformly by the authors; instead, they were compiled from previously published dietary studies, as listed in the Supplemental Information. Each source provided the percentage of energy intake from UPF for that particular population. Because the dietary data came from different studies, the exact assessment methods varied, including tools like food-frequency questionnaires, 24-hour recalls, or national dietary surveys.
+                Now let's look at diet. <strong>UPF intake</strong> varies dramatically across economy types, with higher HDI populations consuming significantly more ultra-processed foods. This data was available for 25 of the 34 populations.
               </p>
               <div class="nav-buttons">
                 <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
@@ -265,12 +299,13 @@
               </div>
             </div>
           </div>
+
           <div class="content-card" data-step="4">
             <div class="card-content">
-              <div class="step-indicator">5/6</div>
-              <h4 class="card-title">UPF intake and body fat percentage</h4>
+              <div class="step-indicator">5/9</div>
+              <h4 class="card-title">Body fat by economy</h4>
               <p class="card-text">
-                When we plot these values, a consistent pattern appears: populations with a higher percentage of UPF in their diet tend to have higher body-fat percentages. This association holds even though the data are drawn from multiple sources with different dietary methods. While this dataset cannot establish causation, it provides evidence that differences in diet composition may explain more variation in obesity than differences in physical activity alone.
+                <strong>Body fat percentage</strong> shows a clear pattern across economy types. Higher HDI populations tend to have higher body fat, while traditional societies have lower body fat percentages.
               </p>
               <div class="nav-buttons">
                 <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
@@ -278,83 +313,56 @@
               </div>
             </div>
           </div>
+
           <div class="content-card" data-step="5">
             <div class="card-content">
-              <div class="step-indicator">6/6</div>
-              <h4 class="card-title">Explore the data yourself</h4>
+              <div class="step-indicator">6/9</div>
+              <h4 class="card-title">Fat vs TEE</h4>
               <p class="card-text">
-                Use the controls below to explore different relationships in the data. Select which variables to plot on each axis and filter by economy type and sex to see how different populations compare.
+                Is there a relationship between energy expenditure and body fat? When we plot <strong>Fat vs TEE</strong>, we see that higher energy expenditure does not consistently predict lower body fat.
               </p>
-              <div class="interactive-controls">
-                <div class="control-group">
-                  <label class="control-label">Y variable</label>
-                  <select id="y-variable-select" class="variable-select">
-                    <option value="bodyFat">Fat</option>
-                    <option value="upf">PercUPF</option>
-                    <option value="TEE">TEE</option>
-                    <option value="PAL">PAL</option>
-                    <option value="hdi_rank">HDI_rank</option>
-                  </select>
-                </div>
-                <div class="control-group">
-                  <label class="control-label">X variable</label>
-                  <select id="x-variable-select" class="variable-select">
-                    <option value="upf">PercUPF</option>
-                    <option value="bodyFat">Fat</option>
-                    <option value="tee">TEE</option>
-                    <option value="pal">PAL</option>
-                    <option value="hdi_rank">HDI_rank</option>
-                  </select>
-                </div>
-                <div class="control-group">
-                  <label class="control-label">Economy</label>
-                  <div class="checkbox-group">
-                    <label class="checkbox-label">
-                      <input type="checkbox" class="economy-checkbox" value="highHDI" checked>
-                      <span class="checkbox-color" style="background-color: #3b82f6;"></span>
-                      highHDI
-                    </label>
-                    <label class="checkbox-label">
-                      <input type="checkbox" class="economy-checkbox" value="AGP" checked>
-                      <span class="checkbox-color" style="background-color: #f97316;"></span>
-                      AGP
-                    </label>
-                    <label class="checkbox-label">
-                      <input type="checkbox" class="economy-checkbox" value="midHDI" checked>
-                      <span class="checkbox-color" style="background-color: #dc2626;"></span>
-                      midHDI
-                    </label>
-                    <label class="checkbox-label">
-                      <input type="checkbox" class="economy-checkbox" value="HG" checked>
-                      <span class="checkbox-color" style="background-color: #84cc16;"></span>
-                      HG
-                    </label>
-                    <label class="checkbox-label">
-                      <input type="checkbox" class="economy-checkbox" value="lowHDI" checked>
-                      <span class="checkbox-color" style="background-color: #14b8a6;"></span>
-                      lowHDI
-                    </label>
-                    <label class="checkbox-label">
-                      <input type="checkbox" class="economy-checkbox" value="HORT" checked>
-                      <span class="checkbox-color" style="background-color: #fbbf24;"></span>
-                      HORT
-                    </label>
-                  </div>
-                </div>
-                <div class="control-group">
-                  <label class="control-label">Sex</label>
-                  <div class="checkbox-group">
-                    <label class="checkbox-label">
-                      <input type="checkbox" class="sex-checkbox" value="M" checked>
-                      Male
-                    </label>
-                    <label class="checkbox-label">
-                      <input type="checkbox" class="sex-checkbox" value="F" checked>
-                      Female
-                    </label>
-                  </div>
-                </div>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
               </div>
+            </div>
+          </div>
+
+          <div class="content-card" data-step="6">
+            <div class="card-content">
+              <div class="step-indicator">7/9</div>
+              <h4 class="card-title">Fat vs PAL</h4>
+              <p class="card-text">
+                <strong>Fat vs PAL</strong> shows a similar pattern. Physical activity level, adjusted for body size, has a weak relationship with body fat percentage. This makes it difficult to argue that activity alone explains obesity differences.
+              </p>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-card" data-step="7">
+            <div class="card-content">
+              <div class="step-indicator">8/9</div>
+              <h4 class="card-title">Fat vs UPF</h4>
+              <p class="card-text">
+                Here's where the pattern becomes clearer. <strong>Fat vs UPF</strong> shows a consistent relationship: populations with higher ultra-processed food consumption tend to have higher body fat percentages.
+              </p>
+              <div class="nav-buttons">
+                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
+                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-card" data-step="8">
+            <div class="card-content">
+              <div class="step-indicator">9/9</div>
+              <h4 class="card-title">Explore the data</h4>
+              <p class="card-text">
+                Use the controls above to explore different relationships in the data. Select which variables to plot, filter by sex, and search for specific populations to highlight.
+              </p>
               <div class="nav-buttons">
                 <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
                 <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>

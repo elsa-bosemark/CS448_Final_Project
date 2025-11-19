@@ -46,7 +46,9 @@ let currentFilters = {
   xVar: 'upf',
   yVar: 'bodyFat',
   economies: ['highHDI', 'AGP', 'midHDI', 'HG', 'lowHDI', 'HORT'],
-  sexes: ['M', 'F']
+  sexes: ['M', 'F'],
+  highlightedPopulations: [], // Array of population names to highlight
+  chartType: 'auto' // 'auto', 'scatter', 'box'
 };
 
 const economyColors = {
@@ -2705,5 +2707,841 @@ export function createMultiCountryTrend(containerId, selectedCountries = ['Unite
   });
 }
 
+// Variable mapping for the unified chart
+const varMapping = {
+  'TEE': { male: 'TEE_M', female: 'TEE_F', label: 'TEE (MJ/day)', tooltip: 'Total Energy Expenditure in megajoules per day' },
+  'PAL': { male: 'PAL_M', female: 'PAL_F', label: 'PAL', tooltip: 'Physical Activity Level ratio' },
+  'PercUPF': { male: 'PercUPF', female: 'PercUPF', label: 'UPF (%)', tooltip: 'Percentage of energy from ultra-processed foods' },
+  'Fat': { male: 'Fat_M', female: 'Fat_F', label: 'Body Fat (%)', tooltip: 'Body fat percentage' },
+  'HDI_score': { male: 'HDI_score', female: 'HDI_score', label: 'HDI Score', tooltip: 'Human Development Index score' }
+};
+
+export function createUnifiedInteractiveChart(containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+
+  const margin = { top: 60, right: 180, bottom: 60, left: 60 };
+  const width = (container.clientWidth || 600) - margin.left - margin.right;
+  const height = 500 - margin.top - margin.bottom;
+
+  const svg = d3.select(`#${containerId}`)
+    .append('svg')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', height + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // Helper to parse values
+  function parseValue(v) {
+    if (v === null || v === undefined) return null;
+    if (typeof v === 'string') {
+      const t = v.trim().toUpperCase();
+      if (t === '' || t === 'NA' || t === 'NULL') return null;
+    }
+    const num = Number(v);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  // Get value for a variable based on sex
+  function getVarValue(d, varName, sex) {
+    const mapping = varMapping[varName];
+    if (!mapping) return null;
+
+    // For shared variables like PercUPF and HDI_score
+    if (mapping.male === mapping.female) {
+      return parseValue(d[mapping.male]);
+    }
+
+    return sex === 'M' ? parseValue(d[mapping.male]) : parseValue(d[mapping.female]);
+  }
+
+  // Determine if we should show box plot (when X is HDI_score or economy-based)
+  const showBoxPlot = currentFilters.chartType === 'box' ||
+    (currentFilters.chartType === 'auto' && currentFilters.xVar === 'HDI_score');
+
+  // Expand data into individual points for M and F
+  const expandedData = [];
+
+  // When X is HDI_score, we only need yVal since we can position by economy
+  const isXAxisHDI = currentFilters.xVar === 'HDI_score';
+
+  // Pseudo HDI scores for economies without actual HDI values
+  const economyPseudoHDI = {
+    'HORT': 0.35,
+    'AGP': 0.25,
+    'HG': 0.15
+  };
+
+  PAL_TEE_UPF_HDI_Data_Elsa.forEach(d => {
+    // Add male data point if selected
+    if (currentFilters.sexes.includes('M')) {
+      let xVal = getVarValue(d, currentFilters.xVar, 'M');
+      const yVal = getVarValue(d, currentFilters.yVar, 'M');
+
+      // For HDI_score on X, assign pseudo HDI for traditional economies
+      if (isXAxisHDI && xVal === null && economyPseudoHDI[d.Economy] !== undefined) {
+        xVal = economyPseudoHDI[d.Economy];
+      }
+
+      // When X is HDI_score, only yVal needs to be non-null (xVal can be pseudo)
+      const shouldInclude = isXAxisHDI ? yVal !== null : (xVal !== null && yVal !== null);
+
+      if (shouldInclude) {
+        expandedData.push({
+          Population: d.Population,
+          Economy: d.Economy,
+          sex: 'M',
+          xVal,
+          yVal,
+          HDI_rank: +d.HDI_rank,
+          lat: d.lat,
+          lon: d.lon
+        });
+      }
+    }
+
+    // Add female data point if selected
+    if (currentFilters.sexes.includes('F')) {
+      let xVal = getVarValue(d, currentFilters.xVar, 'F');
+      const yVal = getVarValue(d, currentFilters.yVar, 'F');
+
+      // For HDI_score on X, assign pseudo HDI for traditional economies
+      if (isXAxisHDI && xVal === null && economyPseudoHDI[d.Economy] !== undefined) {
+        xVal = economyPseudoHDI[d.Economy];
+      }
+
+      // When X is HDI_score, only yVal needs to be non-null (xVal can be pseudo)
+      const shouldInclude = isXAxisHDI ? yVal !== null : (xVal !== null && yVal !== null);
+
+      if (shouldInclude) {
+        expandedData.push({
+          Population: d.Population,
+          Economy: d.Economy,
+          sex: 'F',
+          xVal,
+          yVal,
+          HDI_rank: +d.HDI_rank,
+          lat: d.lat,
+          lon: d.lon
+        });
+      }
+    }
+  });
+
+  // Filter by economy
+  const filteredData = expandedData.filter(d =>
+    currentFilters.economies.includes(d.Economy)
+  );
+
+  if (filteredData.length === 0) {
+    svg.append('text')
+      .attr('x', width / 2)
+      .attr('y', height / 2)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '16px')
+      .attr('fill', '#666')
+      .text('No data available for selected filters');
+    return;
+  }
+
+  // Get highlighted populations from filters
+  const highlightedPopulations = currentFilters.highlightedPopulations || [];
+
+  // Track regression lines and populations without data
+  let hasMaleRegression = false;
+  let hasFemaleRegression = false;
+  const populationsWithoutData = [];
+
+  // Find populations that don't have data for current metrics
+  PAL_TEE_UPF_HDI_Data_Elsa.forEach(d => {
+    if (!currentFilters.economies.includes(d.Economy)) return;
+
+    const hasMaleX = currentFilters.sexes.includes('M') &&
+      getVarValue(d, currentFilters.xVar, 'M') !== null;
+    const hasMaleY = currentFilters.sexes.includes('M') &&
+      getVarValue(d, currentFilters.yVar, 'M') !== null;
+    const hasFemaleX = currentFilters.sexes.includes('F') &&
+      getVarValue(d, currentFilters.xVar, 'F') !== null;
+    const hasFemaleY = currentFilters.sexes.includes('F') &&
+      getVarValue(d, currentFilters.yVar, 'F') !== null;
+
+    // When X is HDI_score, only Y value is needed (we assign pseudo HDI for traditional economies)
+    const maleHasData = isXAxisHDI ? hasMaleY : (hasMaleX && hasMaleY);
+    const femaleHasData = isXAxisHDI ? hasFemaleY : (hasFemaleX && hasFemaleY);
+
+    if (currentFilters.sexes.includes('M') && !maleHasData) {
+      populationsWithoutData.push({ Population: d.Population, Economy: d.Economy, sex: 'M' });
+    }
+    if (currentFilters.sexes.includes('F') && !femaleHasData) {
+      populationsWithoutData.push({ Population: d.Population, Economy: d.Economy, sex: 'F' });
+    }
+  });
+
+  if (showBoxPlot) {
+    // Group data by economy for box plot
+    const groupedData = d3.group(filteredData, d => d.Economy);
+
+    const boxPlotData = economyOrder
+      .filter(economy => currentFilters.economies.includes(economy))
+      .map(economy => {
+        const values = (groupedData.get(economy) || []).map(d => d.yVal).sort(d3.ascending);
+        if (values.length === 0) return null;
+
+        const q1 = d3.quantile(values, 0.25);
+        const median = d3.quantile(values, 0.5);
+        const q3 = d3.quantile(values, 0.75);
+        const iqr = q3 - q1;
+        const min = Math.max(d3.min(values), q1 - 1.5 * iqr);
+        const max = Math.min(d3.max(values), q3 + 1.5 * iqr);
+
+        return { economy, q1, median, q3, min, max, values, data: groupedData.get(economy) };
+      }).filter(d => d !== null);
+
+    const x = d3.scaleBand()
+      .domain(boxPlotData.map(d => d.economy))
+      .range([0, width])
+      .padding(0.3);
+
+    const allValues = boxPlotData.flatMap(d => d.values);
+    const y = d3.scaleLinear()
+      .domain(d3.extent(allValues))
+      .nice()
+      .range([height, 0]);
+
+    // Draw box plots
+    boxPlotData.forEach(box => {
+      const center = x(box.economy) + x.bandwidth() / 2;
+      const boxWidth = x.bandwidth();
+
+      // Whiskers
+      svg.append('line')
+        .attr('x1', center).attr('x2', center)
+        .attr('y1', y(box.min)).attr('y2', y(box.q1))
+        .attr('stroke', '#374151').attr('stroke-width', 1.5);
+
+      svg.append('line')
+        .attr('x1', center).attr('x2', center)
+        .attr('y1', y(box.q3)).attr('y2', y(box.max))
+        .attr('stroke', '#374151').attr('stroke-width', 1.5);
+
+      // Whisker caps
+      svg.append('line')
+        .attr('x1', center - boxWidth / 4).attr('x2', center + boxWidth / 4)
+        .attr('y1', y(box.min)).attr('y2', y(box.min))
+        .attr('stroke', '#374151').attr('stroke-width', 2);
+
+      svg.append('line')
+        .attr('x1', center - boxWidth / 4).attr('x2', center + boxWidth / 4)
+        .attr('y1', y(box.max)).attr('y2', y(box.max))
+        .attr('stroke', '#374151').attr('stroke-width', 2);
+
+      // Box
+      svg.append('rect')
+        .attr('x', center - boxWidth / 2)
+        .attr('y', y(box.q3))
+        .attr('width', boxWidth)
+        .attr('height', y(box.q1) - y(box.q3))
+        .attr('fill', economyColors[box.economy])
+        .attr('stroke', '#374151')
+        .attr('stroke-width', 1.5);
+
+      // Median line
+      svg.append('line')
+        .attr('x1', center - boxWidth / 2).attr('x2', center + boxWidth / 2)
+        .attr('y1', y(box.median)).attr('y2', y(box.median))
+        .attr('stroke', '#374151').attr('stroke-width', 2.5);
+
+      // Draw raw data points with jitter
+      box.data.forEach(d => {
+        const isHighlighted = highlightedPopulations.includes(d.Population);
+        const shapeX = center + (Math.random() - 0.5) * boxWidth * 0.3;
+        const shapeY = y(d.yVal);
+        const size = isHighlighted ? 8 : 6;
+        const opacity = isHighlighted ? 1 : 0.85;
+        const strokeWidth = isHighlighted ? 3 : 1.5;
+        const strokeColor = isHighlighted ? '#000' : '#fff';
+
+        const html = `
+          <strong>${d.Population}</strong><br>
+          Sex: ${d.sex === 'M' ? 'Male' : 'Female'}<br>
+          ${varMapping[currentFilters.yVar].label}: ${d.yVal.toFixed(2)}
+        `;
+
+        if (d.sex === 'M') {
+          svg.append('circle')
+            .attr('cx', shapeX)
+            .attr('cy', shapeY)
+            .attr('r', size)
+            .attr('fill', economyColors[d.Economy])
+            .attr('stroke', strokeColor)
+            .attr('stroke-width', strokeWidth)
+            .attr('opacity', opacity)
+            .style('cursor', 'pointer')
+            .on('mouseover', function(event) {
+              d3.select(this).attr('r', size + 2).attr('opacity', 1);
+              dataValueTooltip.html(html).style('visibility', 'visible');
+            })
+            .on('mousemove', function(event) {
+              dataValueTooltip
+                .style('top', (event.pageY - 10) + 'px')
+                .style('left', (event.pageX + 10) + 'px');
+            })
+            .on('mouseout', function() {
+              d3.select(this).attr('r', size).attr('opacity', opacity);
+              dataValueTooltip.style('visibility', 'hidden');
+            })
+            .on('click', function() {
+              toggleHighlight(d.Population);
+            });
+        } else {
+          const triangleSize = isHighlighted ? 100 : 60;
+          svg.append('path')
+            .attr('d', d3.symbol().type(d3.symbolTriangle).size(triangleSize))
+            .attr('transform', `translate(${shapeX},${shapeY})`)
+            .attr('fill', economyColors[d.Economy])
+            .attr('stroke', strokeColor)
+            .attr('stroke-width', strokeWidth)
+            .attr('opacity', opacity)
+            .style('cursor', 'pointer')
+            .on('mouseover', function(event) {
+              d3.select(this)
+                .attr('d', d3.symbol().type(d3.symbolTriangle).size(triangleSize * 1.5))
+                .attr('opacity', 1);
+              dataValueTooltip.html(html).style('visibility', 'visible');
+            })
+            .on('mousemove', function(event) {
+              dataValueTooltip
+                .style('top', (event.pageY - 10) + 'px')
+                .style('left', (event.pageX + 10) + 'px');
+            })
+            .on('mouseout', function() {
+              d3.select(this)
+                .attr('d', d3.symbol().type(d3.symbolTriangle).size(triangleSize))
+                .attr('opacity', opacity);
+              dataValueTooltip.style('visibility', 'hidden');
+            })
+            .on('click', function() {
+              toggleHighlight(d.Population);
+            });
+        }
+      });
+    });
+
+    // X-axis
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x))
+      .selectAll('text')
+      .attr('font-size', '12px')
+      .attr('font-weight', '600');
+
+    // Y-axis
+    svg.append('g')
+      .call(d3.axisLeft(y))
+      .selectAll('text')
+      .attr('font-size', '12px')
+      .attr('font-weight', '600');
+
+    // X-axis label with tooltip
+    const xAxisLabelGroup = svg.append('g')
+      .attr('transform', `translate(${width / 2}, ${height + 45})`);
+
+    xAxisLabelGroup.append('text')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .attr('font-weight', '700')
+      .attr('fill', '#2d1810')
+      .text('Economy');
+
+    addTooltipIcon(xAxisLabelGroup, 50, -5, 'Economy type classification based on HDI and subsistence strategy');
+
+    // Y-axis label with tooltip
+    const yAxisLabelGroup = svg.append('g')
+      .attr('transform', `rotate(-90) translate(${-height / 2}, -45)`);
+
+    yAxisLabelGroup.append('text')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .attr('font-weight', '700')
+      .attr('fill', '#2d1810')
+      .text(varMapping[currentFilters.yVar].label);
+
+    addTooltipIcon(yAxisLabelGroup, 80, -5, varMapping[currentFilters.yVar].tooltip);
+
+  } else {
+    // Scatter plot
+    const xExtent = d3.extent(filteredData, d => d.xVal);
+    const yExtent = d3.extent(filteredData, d => d.yVal);
+    const xPadding = (xExtent[1] - xExtent[0]) * 0.1;
+    const yPadding = (yExtent[1] - yExtent[0]) * 0.1;
+
+    const x = d3.scaleLinear()
+      .domain([Math.max(0, xExtent[0] - xPadding), xExtent[1] + xPadding])
+      .range([0, width]);
+
+    const y = d3.scaleLinear()
+      .domain([Math.max(0, yExtent[0] - yPadding), yExtent[1] + yPadding])
+      .range([height, 0]);
+
+    // Draw regression lines by sex
+    const males = filteredData.filter(d => d.sex === 'M');
+    const females = filteredData.filter(d => d.sex === 'F');
+
+    function addRegressionLine(data, isDotted) {
+      if (data.length < 2) return false;
+
+      const xMean = d3.mean(data, d => d.xVal);
+      const yMean = d3.mean(data, d => d.yVal);
+
+      let num = 0, denX = 0, denY = 0;
+      data.forEach(d => {
+        const dx = d.xVal - xMean;
+        const dy = d.yVal - yMean;
+        num += dx * dy;
+        denX += dx ** 2;
+        denY += dy ** 2;
+      });
+      if (denX === 0) return false;
+
+      const slope = num / denX;
+      const intercept = yMean - slope * xMean;
+
+      // Calculate correlation coefficient (r)
+      const r = denX > 0 && denY > 0 ? num / Math.sqrt(denX * denY) : 0;
+
+      const xMin = d3.min(data, d => d.xVal);
+      const xMax = d3.max(data, d => d.xVal);
+
+      const line = svg.append('line')
+        .attr('x1', x(xMin))
+        .attr('x2', x(xMax))
+        .attr('y1', y(slope * xMin + intercept))
+        .attr('y2', y(slope * xMax + intercept))
+        .attr('stroke', '#4b5563')
+        .attr('stroke-width', 2)
+        .attr('opacity', 0.9);
+
+      if (isDotted) {
+        line.attr('stroke-dasharray', '5 4');
+      }
+
+      // Add correlation label on the line
+      const labelX = xMin + (xMax - xMin) * 0.7;
+      const labelY = slope * labelX + intercept;
+
+      // Background for label
+      svg.append('rect')
+        .attr('x', x(labelX) - 22)
+        .attr('y', y(labelY) - 12)
+        .attr('width', 44)
+        .attr('height', 16)
+        .attr('fill', 'white')
+        .attr('opacity', 0.85)
+        .attr('rx', 3);
+
+      // Label text
+      svg.append('text')
+        .attr('x', x(labelX))
+        .attr('y', y(labelY))
+        .attr('text-anchor', 'middle')
+        .attr('font-size', '10px')
+        .attr('font-weight', '600')
+        .attr('fill', '#4b5563')
+        .text(`r=${r.toFixed(2)}`);
+
+      return true;
+    }
+
+    if (currentFilters.sexes.includes('M')) hasMaleRegression = addRegressionLine(males, true);
+    if (currentFilters.sexes.includes('F')) hasFemaleRegression = addRegressionLine(females, false);
+
+    // Draw scatter points
+    filteredData.forEach(d => {
+      const isHighlighted = highlightedPopulations.includes(d.Population);
+      const size = isHighlighted ? 9 : 7;
+      const opacity = isHighlighted ? 1 : 0.85;
+      const strokeWidth = isHighlighted ? 3 : 1.5;
+      const strokeColor = isHighlighted ? '#000' : '#fff';
+
+      const html = `
+        <strong>${d.Population}</strong><br>
+        Sex: ${d.sex === 'M' ? 'Male' : 'Female'}<br>
+        ${varMapping[currentFilters.xVar].label}: ${d.xVal.toFixed(2)}<br>
+        ${varMapping[currentFilters.yVar].label}: ${d.yVal.toFixed(2)}
+      `;
+
+      if (d.sex === 'M') {
+        svg.append('circle')
+          .attr('cx', x(d.xVal))
+          .attr('cy', y(d.yVal))
+          .attr('r', size)
+          .attr('fill', economyColors[d.Economy])
+          .attr('stroke', strokeColor)
+          .attr('stroke-width', strokeWidth)
+          .attr('opacity', opacity)
+          .style('cursor', 'pointer')
+          .on('mouseover', function(event) {
+            d3.select(this).attr('r', size + 2).attr('opacity', 1);
+            dataValueTooltip.html(html).style('visibility', 'visible');
+          })
+          .on('mousemove', function(event) {
+            dataValueTooltip
+              .style('top', (event.pageY - 10) + 'px')
+              .style('left', (event.pageX + 10) + 'px');
+          })
+          .on('mouseout', function() {
+            d3.select(this).attr('r', size).attr('opacity', opacity);
+            dataValueTooltip.style('visibility', 'hidden');
+          })
+          .on('click', function() {
+            toggleHighlight(d.Population);
+          });
+      } else {
+        const triangleSize = isHighlighted ? 140 : 100;
+        svg.append('path')
+          .attr('d', d3.symbol().type(d3.symbolTriangle).size(triangleSize))
+          .attr('transform', `translate(${x(d.xVal)},${y(d.yVal)})`)
+          .attr('fill', economyColors[d.Economy])
+          .attr('stroke', strokeColor)
+          .attr('stroke-width', strokeWidth)
+          .attr('opacity', opacity)
+          .style('cursor', 'pointer')
+          .on('mouseover', function(event) {
+            d3.select(this)
+              .attr('d', d3.symbol().type(d3.symbolTriangle).size(triangleSize * 1.4))
+              .attr('opacity', 1);
+            dataValueTooltip.html(html).style('visibility', 'visible');
+          })
+          .on('mousemove', function(event) {
+            dataValueTooltip
+              .style('top', (event.pageY - 10) + 'px')
+              .style('left', (event.pageX + 10) + 'px');
+          })
+          .on('mouseout', function() {
+            d3.select(this)
+              .attr('d', d3.symbol().type(d3.symbolTriangle).size(triangleSize))
+              .attr('opacity', opacity);
+            dataValueTooltip.style('visibility', 'hidden');
+          })
+          .on('click', function() {
+            toggleHighlight(d.Population);
+          });
+      }
+    });
+
+    // X-axis
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x).ticks(8))
+      .selectAll('text')
+      .attr('font-size', '12px')
+      .attr('font-weight', '600');
+
+    // Y-axis
+    svg.append('g')
+      .call(d3.axisLeft(y).ticks(8))
+      .selectAll('text')
+      .attr('font-size', '12px')
+      .attr('font-weight', '600');
+
+    // X-axis label with tooltip
+    const xAxisLabelGroup = svg.append('g')
+      .attr('transform', `translate(${width / 2}, ${height + 45})`);
+
+    xAxisLabelGroup.append('text')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .attr('font-weight', '700')
+      .attr('fill', '#2d1810')
+      .text(varMapping[currentFilters.xVar].label);
+
+    addTooltipIcon(xAxisLabelGroup, 60, -5, varMapping[currentFilters.xVar].tooltip);
+
+    // Y-axis label with tooltip
+    const yAxisLabelGroup = svg.append('g')
+      .attr('transform', `rotate(-90) translate(${-height / 2}, -45)`);
+
+    yAxisLabelGroup.append('text')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .attr('font-weight', '700')
+      .attr('fill', '#2d1810')
+      .text(varMapping[currentFilters.yVar].label);
+
+    addTooltipIcon(yAxisLabelGroup, 80, -5, varMapping[currentFilters.yVar].tooltip);
+  }
+
+  // Legend
+  const legend = svg.append('g')
+    .attr('transform', `translate(${width + 20}, -40)`);
+
+  legend.append('text')
+    .attr('x', 0)
+    .attr('y', 0)
+    .attr('font-size', '16px')
+    .attr('font-weight', '700')
+    .attr('fill', '#000')
+    .text('Economy');
+
+  const economyLabelsList = [
+    { key: 'highHDI', label: 'high HDI' },
+    { key: 'midHDI', label: 'mid HDI' },
+    { key: 'lowHDI', label: 'low HDI' },
+    { key: 'HORT', label: 'horticulturalist' },
+    { key: 'AGP', label: 'agropastoralist' },
+    { key: 'HG', label: 'hunter-gatherer' }
+  ];
+
+  economyLabelsList.forEach((item, i) => {
+    if (!currentFilters.economies.includes(item.key)) return;
+
+    const legendItem = legend.append('g')
+      .attr('transform', `translate(0, ${25 + i * 25})`);
+
+    legendItem.append('circle')
+      .attr('cx', 8)
+      .attr('cy', 0)
+      .attr('r', 6)
+      .attr('fill', economyColors[item.key])
+      .attr('stroke', 'none');
+
+    legendItem.append('text')
+      .attr('x', 22)
+      .attr('y', 5)
+      .attr('font-size', '14px')
+      .attr('fill', '#000')
+      .text(item.label);
+  });
+
+  // Sex legend
+  const sexLegendGroup = svg.append('g')
+    .attr('transform', `translate(${width + 20}, ${180})`);
+
+  sexLegendGroup.append('text')
+    .attr('x', 0)
+    .attr('y', 0)
+    .attr('font-size', '16px')
+    .attr('font-weight', '700')
+    .attr('fill', '#000')
+    .text('Sex');
+
+  let legendY = 25;
+  if (currentFilters.sexes.includes('M')) {
+    const maleLegend = sexLegendGroup.append('g')
+      .attr('transform', `translate(0, ${legendY})`);
+
+    maleLegend.append('circle')
+      .attr('cx', 8)
+      .attr('cy', 0)
+      .attr('r', 6)
+      .attr('fill', '#6b7280')
+      .attr('stroke', 'none');
+
+    maleLegend.append('text')
+      .attr('x', 22)
+      .attr('y', 5)
+      .attr('font-size', '14px')
+      .attr('fill', '#000')
+      .text('Male');
+
+    legendY += 25;
+  }
+
+  if (currentFilters.sexes.includes('F')) {
+    const femaleLegend = sexLegendGroup.append('g')
+      .attr('transform', `translate(0, ${legendY})`);
+
+    femaleLegend.append('path')
+      .attr('d', d3.symbol().type(d3.symbolTriangle).size(50))
+      .attr('transform', 'translate(8, 0)')
+      .attr('fill', '#6b7280')
+      .attr('stroke', 'none');
+
+    femaleLegend.append('text')
+      .attr('x', 22)
+      .attr('y', 5)
+      .attr('font-size', '14px')
+      .attr('fill', '#000')
+      .text('Female');
+
+    legendY += 25;
+  }
+
+  // Regression lines legend (only for scatter plots)
+  if (!showBoxPlot && (hasMaleRegression || hasFemaleRegression)) {
+    const regressionLegend = svg.append('g')
+      .attr('transform', `translate(${width + 20}, ${180 + legendY + 10})`);
+
+    regressionLegend.append('text')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('font-size', '16px')
+      .attr('font-weight', '700')
+      .attr('fill', '#000')
+      .text('Regression');
+
+    let regY = 25;
+
+    if (hasMaleRegression) {
+      const maleReg = regressionLegend.append('g')
+        .attr('transform', `translate(0, ${regY})`);
+
+      maleReg.append('line')
+        .attr('x1', 0)
+        .attr('x2', 28)
+        .attr('y1', 0)
+        .attr('y2', 0)
+        .attr('stroke', '#4b5563')
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', '5 4');
+
+      maleReg.append('text')
+        .attr('x', 36)
+        .attr('y', 4)
+        .attr('font-size', '14px')
+        .attr('fill', '#000')
+        .text('Male');
+
+      regY += 25;
+    }
+
+    if (hasFemaleRegression) {
+      const femaleReg = regressionLegend.append('g')
+        .attr('transform', `translate(0, ${regY})`);
+
+      femaleReg.append('line')
+        .attr('x1', 0)
+        .attr('x2', 28)
+        .attr('y1', 0)
+        .attr('y2', 0)
+        .attr('stroke', '#4b5563')
+        .attr('stroke-width', 2);
+
+      femaleReg.append('text')
+        .attr('x', 36)
+        .attr('y', 4)
+        .attr('font-size', '14px')
+        .attr('fill', '#000')
+        .text('Female');
+    }
+  }
+
+  // Add section for populations without data below chart
+  if (populationsWithoutData.length > 0) {
+    const noDataGroup = d3.select(`#${containerId}`)
+      .append('div')
+      .attr('class', 'no-data-section')
+      .style('margin-top', '10px')
+      .style('padding', '10px 15px')
+      .style('background', 'rgba(0, 0, 0, 0.05)')
+      .style('border-radius', '6px')
+      .style('font-size', '12px');
+
+    noDataGroup.append('div')
+      .style('font-weight', '600')
+      .style('margin-bottom', '8px')
+      .style('color', '#666')
+      .text('Missing data for current metrics:');
+
+    const itemsContainer = noDataGroup.append('div')
+      .style('display', 'flex')
+      .style('flex-wrap', 'wrap')
+      .style('gap', '8px');
+
+    populationsWithoutData.forEach(d => {
+      const isHighlighted = highlightedPopulations.includes(d.Population);
+      const item = itemsContainer.append('span')
+        .style('display', 'inline-flex')
+        .style('align-items', 'center')
+        .style('gap', '4px')
+        .style('padding', '2px 8px')
+        .style('background', isHighlighted ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.8)')
+        .style('border-radius', '4px')
+        .style('cursor', 'pointer')
+        .style('border', isHighlighted ? '2px solid #000' : '1px solid #ddd');
+
+      // Add shape for sex
+      if (d.sex === 'M') {
+        item.append('span')
+          .style('width', '8px')
+          .style('height', '8px')
+          .style('border-radius', '50%')
+          .style('background', economyColors[d.Economy]);
+      } else {
+        item.append('span')
+          .style('width', '0')
+          .style('height', '0')
+          .style('border-left', '4px solid transparent')
+          .style('border-right', '4px solid transparent')
+          .style('border-bottom', `8px solid ${economyColors[d.Economy]}`);
+      }
+
+      item.append('span')
+        .style('font-size', '11px')
+        .style('color', '#333')
+        .text(d.Population.length > 15 ? d.Population.substring(0, 13) + '...' : d.Population);
+
+      // Add tooltip on hover
+      item.on('mouseover', function(event) {
+        dataValueTooltip
+          .html(`
+            <strong>${d.Population}</strong><br>
+            Sex: ${d.sex === 'M' ? 'Male' : 'Female'}<br>
+            Economy: ${economyLabels[d.Economy] || d.Economy}<br>
+            <em>No data for ${varMapping[currentFilters.xVar].label} or ${varMapping[currentFilters.yVar].label}</em>
+          `)
+          .style('visibility', 'visible');
+      })
+      .on('mousemove', function(event) {
+        dataValueTooltip
+          .style('top', (event.pageY - 10) + 'px')
+          .style('left', (event.pageX + 10) + 'px');
+      })
+      .on('mouseout', function() {
+        dataValueTooltip.style('visibility', 'hidden');
+      });
+    });
+  }
+}
+
+// Helper function to set filters for preset configurations
+export function setUnifiedChartFilters(config) {
+  currentFilters = {
+    ...currentFilters,
+    ...config
+  };
+}
+
+// Get current filters
+export function getUnifiedChartFilters() {
+  return { ...currentFilters };
+}
+
+// Toggle highlight for a population
+export function toggleHighlight(population) {
+  const index = currentFilters.highlightedPopulations.indexOf(population);
+  if (index > -1) {
+    currentFilters.highlightedPopulations.splice(index, 1);
+  } else {
+    currentFilters.highlightedPopulations.push(population);
+  }
+
+  // Dispatch custom event so scroll.js can sync its selectedPopulations
+  const event = new CustomEvent('highlightChanged', {
+    detail: { highlightedPopulations: [...currentFilters.highlightedPopulations] }
+  });
+  document.dispatchEvent(event);
+
+  // Redraw chart
+  createUnifiedInteractiveChart('inactivity-chart');
+}
 
 

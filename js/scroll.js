@@ -1,9 +1,16 @@
-import { createWorldMap, createInactivityChart, createInactivityScatterPlot, createUPFChart, createDataCollectionMap, createMetricBoxPlot, createMetricScatterPlot, createUPFScatterPlot, createUPFBodyFatScatterPlot, createInteractiveScatterPlot, updateFilters } from './charts.js';
+import { createWorldMap, createInactivityChart, createInactivityScatterPlot, createUPFChart, createDataCollectionMap, createMetricBoxPlot, createMetricScatterPlot, createUPFScatterPlot, createUPFBodyFatScatterPlot, createInteractiveScatterPlot, updateFilters, createUnifiedInteractiveChart, setUnifiedChartFilters, getUnifiedChartFilters, toggleHighlight } from './charts.js';
+import { PAL_TEE_UPF_HDI_Data_Elsa } from './data.js';
+
+// Get all unique population names for the selector
+const allPopulations = [...new Set(PAL_TEE_UPF_HDI_Data_Elsa.map(d => d.Population))].sort();
+
+// Currently selected populations for highlighting
+let selectedPopulations = [];
 
 const state = {
   map: { step: 0, totalSteps: 4, currentYear: 2022 },
   'combined-question': { step: 0, totalSteps: 2 },
-  inactivity: { step: 0, totalSteps: 6, userGuess: null, viewMode: 'box', metric: 'tee', showRawData: true },
+  inactivity: { step: 0, totalSteps: 9, userGuess: null, viewMode: 'box', metric: 'tee', showRawData: true },
   upf: { step: 0, totalSteps: 2 },
   interactiveFilters: {
     xVar: 'upf',
@@ -11,6 +18,18 @@ const state = {
     economies: ['highHDI', 'AGP', 'midHDI', 'HG', 'lowHDI', 'HORT'],
     sexes: ['M', 'F']
   }
+};
+
+// Preset configurations for each step of the unified chart
+const chartPresets = {
+  1: { xVar: 'HDI_score', yVar: 'TEE', chartType: 'box' },      // TEE over Economy
+  2: { xVar: 'HDI_score', yVar: 'PAL', chartType: 'box' },      // PAL over Economy
+  3: { xVar: 'HDI_score', yVar: 'PercUPF', chartType: 'box' },  // UPF over Economy
+  4: { xVar: 'HDI_score', yVar: 'Fat', chartType: 'box' },      // Fat over Economy
+  5: { xVar: 'TEE', yVar: 'Fat', chartType: 'scatter' },        // Fat vs TEE
+  6: { xVar: 'PAL', yVar: 'Fat', chartType: 'scatter' },        // Fat vs PAL
+  7: { xVar: 'PercUPF', yVar: 'Fat', chartType: 'scatter' },    // Fat vs UPF
+  8: { xVar: 'PercUPF', yVar: 'Fat', chartType: 'auto' }        // Exploration (user controlled)
 };
 
 const sectionOrder = ['map-section', 'combined-question-section', 'inactivity-section', 'conclusion-section'];
@@ -61,77 +80,56 @@ function updateChart(sectionKey, step) {
       break;
     case 'inactivity':
       const chartTitle = document.getElementById('inactivity-chart-title');
-      const metricContainer = document.getElementById('metric-selector-container');
-      const metricSelector = document.getElementById('metric-selector');
-      const toggleBtn = document.getElementById('toggle-view-btn');
+      const controlsContainer = document.getElementById('unified-controls-container');
+      const chartTypeControl = document.getElementById('chart-type-control');
 
       if (step === 0) {
+        // Data collection map
         if (chartTitle) chartTitle.textContent = 'Data Collection Locations';
-        if (metricContainer) metricContainer.style.display = 'none';
+        if (controlsContainer) controlsContainer.style.display = 'none';
         createDataCollectionMap('inactivity-chart');
-      } else if (step === 1) {
-        // Card 2: TEE
-        state.inactivity.metric = 'tee';
-        if (chartTitle) chartTitle.textContent = 'Total energy expenditure (TEE) by Economy Type';
-        if (metricContainer) metricContainer.style.display = 'flex';
-        if (metricSelector) metricSelector.value = 'tee';
+      } else if (step >= 1 && step <= 8) {
+        // Steps 1-8 use the unified chart
+        const preset = chartPresets[step];
 
-        // Update metric toggle buttons
-        const metricToggleBtns = document.querySelectorAll('.metric-toggle-btn');
-        metricToggleBtns.forEach(btn => {
-          if (btn.dataset.metric === 'tee') {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
+        // Apply preset configuration (keep highlighted populations)
+        setUnifiedChartFilters({
+          xVar: preset.xVar,
+          yVar: preset.yVar,
+          chartType: preset.chartType,
+          sexes: ['M', 'F'],
+          highlightedPopulations: selectedPopulations
         });
 
-        if (toggleBtn) {
-          toggleBtn.textContent = state.inactivity.viewMode === 'box' ? 'Show Scatter Plot' : 'Show Box Plot';
-        }
-        if (state.inactivity.viewMode === 'box') {
-          createMetricBoxPlot('inactivity-chart', 'tee', state.inactivity.showRawData);
-        } else {
-          createMetricScatterPlot('inactivity-chart', 'tee');
-        }
-      } else if (step === 2) {
-        // Card 3: PAL
-        state.inactivity.metric = 'pal';
-        if (chartTitle) chartTitle.textContent = 'Physical activity level (PAL) by Economy Type';
-        if (metricContainer) metricContainer.style.display = 'flex';
-        if (metricSelector) metricSelector.value = 'pal';
+        // Update chart title based on step
+        const titles = {
+          1: 'Total Energy Expenditure (TEE) by Economy',
+          2: 'Physical Activity Level (PAL) by Economy',
+          3: 'Ultra-Processed Food (UPF) % by Economy',
+          4: 'Body Fat % by Economy',
+          5: 'Body Fat vs Total Energy Expenditure',
+          6: 'Body Fat vs Physical Activity Level',
+          7: 'Body Fat vs Ultra-Processed Food %',
+          8: 'Interactive Data Explorer'
+        };
+        if (chartTitle) chartTitle.textContent = titles[step];
 
-        // Update metric toggle buttons
-        const metricToggleBtns = document.querySelectorAll('.metric-toggle-btn');
-        metricToggleBtns.forEach(btn => {
-          if (btn.dataset.metric === 'pal') {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
-        });
+        // Show controls for all unified chart steps
+        if (controlsContainer) controlsContainer.style.display = 'flex';
 
-        if (toggleBtn) {
-          toggleBtn.textContent = state.inactivity.viewMode === 'box' ? 'Show Scatter Plot' : 'Show Box Plot';
+        // Show chart type toggle only when X is HDI_score
+        if (chartTypeControl) {
+          chartTypeControl.style.display = preset.xVar === 'HDI_score' ? 'flex' : 'none';
         }
-        if (state.inactivity.viewMode === 'box') {
-          createMetricBoxPlot('inactivity-chart', 'pal', state.inactivity.showRawData);
-        } else {
-          createMetricScatterPlot('inactivity-chart', 'pal');
-        }
-      } else if (step === 3) {
-        if (chartTitle) chartTitle.textContent = 'UPF Intake vs HDI Rank';
-        if (metricContainer) metricContainer.style.display = 'none';
-        createUPFScatterPlot('inactivity-chart');
-      } else if (step === 4) {
-        if (chartTitle) chartTitle.textContent = 'UPF Intake vs Body Fat';
-        if (metricContainer) metricContainer.style.display = 'none';
-        createUPFBodyFatScatterPlot('inactivity-chart');
-      } else if (step === 5) {
-        if (chartTitle) chartTitle.textContent = 'Interactive Data Explorer';
-        if (metricContainer) metricContainer.style.display = 'none';
-        createInteractiveScatterPlot('inactivity-chart');
-        setupInteractiveFilters();
+
+        // Update UI controls to reflect preset
+        updateUnifiedControls(preset);
+
+        // Draw the chart
+        createUnifiedInteractiveChart('inactivity-chart');
+
+        // Setup control listeners for all chart steps (users can modify)
+        setupUnifiedChartControls();
       }
       break;
     case 'scatter':
@@ -299,4 +297,191 @@ function setupInteractiveFilters() {
   xSelect.addEventListener('change', updatePlot);
   economyCheckboxes.forEach(cb => cb.addEventListener('change', updatePlot));
   sexCheckboxes.forEach(cb => cb.addEventListener('change', updatePlot));
+}
+
+// Update UI controls to reflect current preset
+function updateUnifiedControls(preset) {
+  const ySelect = document.getElementById('unified-y-select');
+  const xSelect = document.getElementById('unified-x-select');
+  const maleCb = document.getElementById('unified-male-cb');
+  const femaleCb = document.getElementById('unified-female-cb');
+  const boxBtn = document.getElementById('box-view-btn');
+  const scatterBtn = document.getElementById('scatter-view-btn');
+  const populationSelect = document.getElementById('population-select');
+  const selectedPopulationsContainer = document.getElementById('selected-populations');
+  const viewTabs = document.querySelector('.view-tabs');
+
+  if (ySelect) ySelect.value = preset.yVar;
+  if (xSelect) xSelect.value = preset.xVar;
+  if (maleCb) maleCb.checked = true;
+  if (femaleCb) femaleCb.checked = true;
+  if (populationSelect) populationSelect.value = '';
+  // Keep population tags - they persist across card changes
+
+  // Update chart type buttons
+  if (boxBtn && scatterBtn) {
+    if (preset.chartType === 'box') {
+      boxBtn.classList.add('active');
+      scatterBtn.classList.remove('active');
+    } else {
+      scatterBtn.classList.add('active');
+      boxBtn.classList.remove('active');
+    }
+  }
+
+  // Update view tabs disabled state based on x-axis
+  if (viewTabs) {
+    if (preset.xVar === 'HDI_score') {
+      viewTabs.classList.remove('disabled');
+    } else {
+      viewTabs.classList.add('disabled');
+    }
+  }
+}
+
+// Setup event listeners for unified chart controls
+function setupUnifiedChartControls() {
+  const ySelect = document.getElementById('unified-y-select');
+  const xSelect = document.getElementById('unified-x-select');
+  const maleCb = document.getElementById('unified-male-cb');
+  const femaleCb = document.getElementById('unified-female-cb');
+  const boxBtn = document.getElementById('box-view-btn');
+  const scatterBtn = document.getElementById('scatter-view-btn');
+  const populationSelect = document.getElementById('population-select');
+  const selectedPopulationsContainer = document.getElementById('selected-populations');
+  const viewTabs = document.querySelector('.view-tabs');
+
+  // Populate population dropdown
+  if (populationSelect && populationSelect.options.length <= 1) {
+    allPopulations.forEach(pop => {
+      const option = document.createElement('option');
+      option.value = pop;
+      option.textContent = pop;
+      populationSelect.appendChild(option);
+    });
+  }
+
+  // Update disabled state of view tabs based on x-axis
+  const updateViewTabsState = () => {
+    const xVar = xSelect ? xSelect.value : 'HDI_score';
+    if (viewTabs) {
+      if (xVar === 'HDI_score') {
+        viewTabs.classList.remove('disabled');
+      } else {
+        viewTabs.classList.add('disabled');
+      }
+    }
+  };
+
+  // Render selected population tags
+  const renderPopulationTags = () => {
+    if (!selectedPopulationsContainer) return;
+    selectedPopulationsContainer.innerHTML = '';
+
+    selectedPopulations.forEach(pop => {
+      const tag = document.createElement('span');
+      tag.className = 'population-tag';
+      tag.innerHTML = `
+        ${pop.length > 15 ? pop.substring(0, 13) + '...' : pop}
+        <span class="population-tag-remove" data-pop="${pop}">×</span>
+      `;
+      selectedPopulationsContainer.appendChild(tag);
+    });
+
+    // Add click handlers for remove buttons
+    selectedPopulationsContainer.querySelectorAll('.population-tag-remove').forEach(btn => {
+      btn.onclick = (e) => {
+        const popToRemove = e.target.dataset.pop;
+        selectedPopulations = selectedPopulations.filter(p => p !== popToRemove);
+        renderPopulationTags();
+        updateChart();
+      };
+    });
+  };
+
+  const updateChart = () => {
+    const sexes = [];
+    if (maleCb && maleCb.checked) sexes.push('M');
+    if (femaleCb && femaleCb.checked) sexes.push('F');
+
+    const currentFilters = getUnifiedChartFilters();
+    const xVar = xSelect ? xSelect.value : currentFilters.xVar;
+    const yVar = ySelect ? ySelect.value : currentFilters.yVar;
+
+    // Determine chart type
+    let chartType = 'auto';
+    if (xVar === 'HDI_score') {
+      if (boxBtn && boxBtn.classList.contains('active')) {
+        chartType = 'box';
+      } else if (scatterBtn && scatterBtn.classList.contains('active')) {
+        chartType = 'scatter';
+      }
+    } else {
+      chartType = 'scatter'; // Force scatter when X is not HDI_score
+    }
+
+    // Update view tabs disabled state
+    updateViewTabsState();
+
+    setUnifiedChartFilters({
+      xVar,
+      yVar,
+      sexes,
+      chartType,
+      highlightedPopulations: selectedPopulations
+    });
+
+    createUnifiedInteractiveChart('inactivity-chart');
+  };
+
+  // Remove old listeners and add new ones
+  if (ySelect) {
+    ySelect.onchange = updateChart;
+  }
+  if (xSelect) {
+    xSelect.onchange = updateChart;
+  }
+  if (maleCb) {
+    maleCb.onchange = updateChart;
+  }
+  if (femaleCb) {
+    femaleCb.onchange = updateChart;
+  }
+  if (boxBtn) {
+    boxBtn.onclick = () => {
+      if (viewTabs && viewTabs.classList.contains('disabled')) return;
+      boxBtn.classList.add('active');
+      if (scatterBtn) scatterBtn.classList.remove('active');
+      updateChart();
+    };
+  }
+  if (scatterBtn) {
+    scatterBtn.onclick = () => {
+      if (viewTabs && viewTabs.classList.contains('disabled')) return;
+      scatterBtn.classList.add('active');
+      if (boxBtn) boxBtn.classList.remove('active');
+      updateChart();
+    };
+  }
+  if (populationSelect) {
+    populationSelect.onchange = () => {
+      const selected = populationSelect.value;
+      if (selected && !selectedPopulations.includes(selected)) {
+        selectedPopulations.push(selected);
+        renderPopulationTags();
+        updateChart();
+      }
+      populationSelect.value = ''; // Reset dropdown
+    };
+  }
+
+  // Initial render of tags and view tabs state
+  renderPopulationTags();
+  updateViewTabsState();
+
+  // Listen for highlight changes from clicking data points
+  document.addEventListener('highlightChanged', (event) => {
+    selectedPopulations = event.detail.highlightedPopulations;
+    renderPopulationTags();
+  });
 }

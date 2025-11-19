@@ -1350,3 +1350,262 @@ body {
     padding: 1rem;
   }
 }
+
+/* Unified Chart Controls */
+.chart-controls-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.unified-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.control-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.control-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-label-small {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.unified-select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.unified-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.sex-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.toggle-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.search-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.search-input {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
+  flex: 1;
+  max-width: 200px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+.view-tabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.view-tab {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: white;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.15s;
+}
+
+.view-tab:not(:last-child) {
+  border-right: 1px solid #d1d5db;
+}
+
+.view-tab.active {
+  background: #3b82f6;
+  color: white;
+}
+
+.view-tab:hover:not(.active) {
+  background: #f3f4f6;
+}
+
+/* View tabs wrapper with tooltip */
+.view-tabs-wrapper {
+  position: relative;
+}
+
+.view-tabs.disabled .view-tab {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.view-tabs.disabled {
+  cursor: help;
+}
+
+.disabled-tooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.disabled-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: rgba(0, 0, 0, 0.9);
+}
+
+.view-tabs-wrapper:hover .disabled-tooltip {
+  display: block;
+}
+
+.view-tabs:not(.disabled) + .disabled-tooltip {
+  display: none !important;
+}
+
+/* Population selector */
+.population-selector-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.population-selector-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.population-select {
+  min-width: 180px;
+}
+
+.selected-populations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  min-height: 24px;
+}
+
+.population-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  background: #3b82f6;
+  color: white;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.population-tag-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.population-tag-remove:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive adjustments for controls */
+@media (max-width: 768px) {
+  .control-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-input {
+    max-width: 100%;
+  }
+
+  .unified-select {
+    min-width: 80px;
+  }
+
+  .disabled-tooltip {
+    white-space: normal;
+    max-width: 200px;
+    text-align: center;
+  }
+}
