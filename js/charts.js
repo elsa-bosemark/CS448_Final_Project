@@ -3087,7 +3087,7 @@ export function createUnifiedInteractiveChart(containerId) {
     const females = filteredData.filter(d => d.sex === 'F');
 
     function addRegressionLine(data, isDotted) {
-      if (data.length < 2) return false;
+      if (data.length < 2) return { hasLine: false, r: 0 };
 
       const xMean = d3.mean(data, d => d.xVal);
       const yMean = d3.mean(data, d => d.yVal);
@@ -3100,7 +3100,7 @@ export function createUnifiedInteractiveChart(containerId) {
         denX += dx ** 2;
         denY += dy ** 2;
       });
-      if (denX === 0) return false;
+      if (denX === 0) return { hasLine: false, r: 0 };
 
       const slope = num / denX;
       const intercept = yMean - slope * xMean;
@@ -3124,35 +3124,21 @@ export function createUnifiedInteractiveChart(containerId) {
         line.attr('stroke-dasharray', '5 4');
       }
 
-      // Add correlation label on the line
-      const labelX = xMin + (xMax - xMin) * 0.7;
-      const labelY = slope * labelX + intercept;
-
-      // Background for label
-      svg.append('rect')
-        .attr('x', x(labelX) - 22)
-        .attr('y', y(labelY) - 12)
-        .attr('width', 44)
-        .attr('height', 16)
-        .attr('fill', 'white')
-        .attr('opacity', 0.85)
-        .attr('rx', 3);
-
-      // Label text
-      svg.append('text')
-        .attr('x', x(labelX))
-        .attr('y', y(labelY))
-        .attr('text-anchor', 'middle')
-        .attr('font-size', '10px')
-        .attr('font-weight', '600')
-        .attr('fill', '#4b5563')
-        .text(`r=${r.toFixed(2)}`);
-
-      return true;
+      return { hasLine: true, r: r };
     }
 
-    if (currentFilters.sexes.includes('M')) hasMaleRegression = addRegressionLine(males, true);
-    if (currentFilters.sexes.includes('F')) hasFemaleRegression = addRegressionLine(females, false);
+    let maleRValue = 0;
+    let femaleRValue = 0;
+    if (currentFilters.sexes.includes('M')) {
+      const result = addRegressionLine(males, true);
+      hasMaleRegression = result.hasLine;
+      maleRValue = result.r;
+    }
+    if (currentFilters.sexes.includes('F')) {
+      const result = addRegressionLine(females, false);
+      hasFemaleRegression = result.hasLine;
+      femaleRValue = result.r;
+    }
 
     // Draw scatter points
     filteredData.forEach(d => {
@@ -3403,7 +3389,7 @@ export function createUnifiedInteractiveChart(containerId) {
         .attr('y', 4)
         .attr('font-size', '14px')
         .attr('fill', '#000')
-        .text('Male');
+        .text(`Male (r=${maleRValue.toFixed(2)})`);
 
       regY += 25;
     }
@@ -3425,7 +3411,7 @@ export function createUnifiedInteractiveChart(containerId) {
         .attr('y', 4)
         .attr('font-size', '14px')
         .attr('fill', '#000')
-        .text('Female');
+        .text(`Female (r=${femaleRValue.toFixed(2)})`);
     }
   }
 
