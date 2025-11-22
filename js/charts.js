@@ -2864,6 +2864,10 @@ export function createUnifiedInteractiveChart(containerId) {
     }
   });
 
+  // Initialize regression r-values (will be set in scatter plot section)
+  let maleRValue = 0;
+  let femaleRValue = 0;
+
   if (showBoxPlot) {
     // Group data by economy for box plot
     const groupedData = d3.group(filteredData, d => d.Economy);
@@ -3127,8 +3131,6 @@ export function createUnifiedInteractiveChart(containerId) {
       return { hasLine: true, r: r };
     }
 
-    let maleRValue = 0;
-    let femaleRValue = 0;
     if (currentFilters.sexes.includes('M')) {
       const result = addRegressionLine(males, true);
       hasMaleRegression = result.hasLine;

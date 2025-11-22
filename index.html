@@ -174,7 +174,7 @@
         <div class="graph-side">
           <div class="chart-wrapper">
             <div class="chart-header">
-              <h3 class="chart-title" id="inactivity-chart-title">Total energy expenditure (TEE) by Economy Type</h3>
+              <h3 class="chart-title" id="inactivity-chart-title">Total test energy expenditure (TEE) by Economy Type</h3>
             </div>
             <div id="inactivity-chart"></div>
             <div class="chart-controls-row" id="unified-controls-container" style="display: none;">
@@ -205,8 +205,8 @@
                   <div class="control-item">
                     <label class="control-label-small">X-axis:</label>
                     <select id="unified-x-select" class="unified-select">
-                      <option value="Economy_Type" selected>Economy Type</option>
-                      <option value="HDI_rank">Human Development Index (HDI) Rank</option>
+                      <option value="Economy_Type">Economy Type</option>
+                      <option value="HDI_rank" selected>Human Development Index (HDI) Rank</option>
                       <option value="TEE">Total Energy Expenditure (TEE) MJ/day</option>
                       <option value="PAL">Physical Activity Level (PAL)</option>
                       <option value="PercUPF">Percentage of Energy Intake from Ultra-processed Foods</option>
@@ -243,7 +243,7 @@
 
           <div class="content-card active" data-step="0">
             <div class="card-content">
-              <div class="step-indicator">1/9</div>
+              <div class="step-indicator">1/5</div>
               <h4 class="card-title">Data collection and Filtering</h4>
               <p class="card-text">
                 The map to the left shows where data was collected from the <b>34 different populations</b>. Each point represents a population group, color-coded by their economic development level according to the Human Development Index (HDI).
@@ -256,133 +256,64 @@
                 <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
               </div>
               <div class="skip-link-container">
-                <a href="#" class="skip-link" data-target-step="8">Skip to interactive graph →</a>
+                <a href="#" class="skip-link" data-target-step="4">Skip to interactive graph →</a>
               </div>
             </div>
           </div>
-
           <div class="content-card" data-step="1">
             <div class="card-content">
-              <div class="step-indicator">2/9</div>
-              <h4 class="card-title">Total energy expenditure (TEE)</h4>
+              <div class="step-indicator">2/5</div>
+              <h4 class="card-title">Body fat by HDI rank</h4>
               <p class="card-text">
-                Here we plot <strong>TEE</strong>, showing the total megajoules (MJ) of energy people burn per day across different economy types. The values vary across populations, but much of that variation reflects differences in body size rather than physical activity.
+                When we plot <strong>body fat percentage by HDI rank</strong> (where lower rank = higher development), we see a clear relationship: populations from more developed countries (lower HDI rank numbers) tend to have higher body fat percentages.
               </p>
               <div class="nav-buttons">
                 <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
                 <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
               </div>
               <div class="skip-link-container">
-                <a href="#" class="skip-link" data-target-step="8">Skip to interactive graph →</a>
+                <a href="#" class="skip-link" data-target-step="4">Skip to interactive graph →</a>
               </div>
             </div>
           </div>
 
           <div class="content-card" data-step="2">
             <div class="card-content">
-              <div class="step-indicator">3/9</div>
-              <h4 class="card-title">Physical activity level (PAL)</h4>
+              <div class="step-indicator">3/5</div>
+              <h4 class="card-title">Body fat vs Physical Activity Level (PAL)</h4>
               <p class="card-text">
-                <strong>PAL</strong> adjusts for body size by dividing total energy expenditure by basal metabolic needs. When we examine PAL across economy types, the pattern is similar: there is a weak relationship between economic development and activity level.
+                Is there a relationship between physical activity and body fat? When we plot <strong>body fat % vs PAL</strong>, we see a weak relationship: higher physical activity levels do not consistently predict lower body fat percentages across populations.
               </p>
               <div class="nav-buttons">
                 <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
                 <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
               </div>
               <div class="skip-link-container">
-                <a href="#" class="skip-link" data-target-step="8">Skip to interactive graph →</a>
+                <a href="#" class="skip-link" data-target-step="4">Skip to interactive graph →</a>
               </div>
             </div>
           </div>
 
           <div class="content-card" data-step="3">
             <div class="card-content">
-              <div class="step-indicator">4/9</div>
-              <h4 class="card-title">Ultra-processed foods (UPF)</h4>
+              <div class="step-indicator">4/5</div>
+              <h4 class="card-title">Body fat vs Ultra-Processed Food (UPF)</h4>
               <p class="card-text">
-                Now let's look at diet. <strong>UPF intake</strong> varies dramatically across economy types, with higher HDI populations consuming significantly more ultra-processed foods. This data was available for 25 of the 34 populations.
+                Here's where the pattern becomes clearer. When we plot <strong>body fat % vs UPF intake</strong>, we see a stronger, more consistent relationship: populations with higher ultra-processed food consumption tend to have higher body fat percentages. This data was available for 25 of the 34 populations.
               </p>
               <div class="nav-buttons">
                 <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
                 <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
               </div>
               <div class="skip-link-container">
-                <a href="#" class="skip-link" data-target-step="8">Skip to interactive graph →</a>
+                <a href="#" class="skip-link" data-target-step="4">Skip to interactive graph →</a>
               </div>
             </div>
           </div>
 
           <div class="content-card" data-step="4">
             <div class="card-content">
-              <div class="step-indicator">5/9</div>
-              <h4 class="card-title">Body fat by economy</h4>
-              <p class="card-text">
-                <strong>Body fat percentage</strong> shows a clear pattern across economy types. Higher HDI populations tend to have higher body fat, while traditional societies have lower body fat percentages.
-              </p>
-              <div class="nav-buttons">
-                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
-                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
-              </div>
-              <div class="skip-link-container">
-                <a href="#" class="skip-link" data-target-step="8">Skip to interactive graph →</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="content-card" data-step="5">
-            <div class="card-content">
-              <div class="step-indicator">6/9</div>
-              <h4 class="card-title">Fat vs TEE</h4>
-              <p class="card-text">
-                Is there a relationship between energy expenditure and body fat? When we plot <strong>Fat vs TEE</strong>, we see that higher energy expenditure does not consistently predict lower body fat.
-              </p>
-              <div class="nav-buttons">
-                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
-                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
-              </div>
-              <div class="skip-link-container">
-                <a href="#" class="skip-link" data-target-step="8">Skip to interactive graph →</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="content-card" data-step="6">
-            <div class="card-content">
-              <div class="step-indicator">7/9</div>
-              <h4 class="card-title">Fat vs PAL</h4>
-              <p class="card-text">
-                <strong>Fat vs PAL</strong> shows a similar pattern. Physical activity level, adjusted for body size, has a weak relationship with body fat percentage. This makes it difficult to argue that activity alone explains obesity differences.
-              </p>
-              <div class="nav-buttons">
-                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
-                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
-              </div>
-              <div class="skip-link-container">
-                <a href="#" class="skip-link" data-target-step="8">Skip to interactive graph →</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="content-card" data-step="7">
-            <div class="card-content">
-              <div class="step-indicator">8/9</div>
-              <h4 class="card-title">Fat vs UPF</h4>
-              <p class="card-text">
-                Here's where the pattern becomes clearer. <strong>Fat vs UPF</strong> shows a consistent relationship: populations with higher ultra-processed food consumption tend to have higher body fat percentages.
-              </p>
-              <div class="nav-buttons">
-                <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
-                <button class="nav-btn next-btn" data-section="inactivity-section">Next →</button>
-              </div>
-              <div class="skip-link-container">
-                <a href="#" class="skip-link" data-target-step="8">Skip to interactive graph →</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="content-card" data-step="8">
-            <div class="card-content">
-              <div class="step-indicator">9/9</div>
+              <div class="step-indicator">5/5</div>
               <h4 class="card-title">Explore the data</h4>
               <p class="card-text">
                 Use the controls above to explore different relationships in the data. Select which variables to plot, filter by sex, and search for specific populations to highlight.
