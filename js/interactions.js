@@ -126,3 +126,57 @@ export function setupInteractions() {
     });
   }
 }
+
+// Piper Block C: guided country switching (US / Japan / Gulf)
+function setupPiperBlockC() {
+  const block = document.getElementById("piper-block-c");
+  if (!block) return;
+
+  const cards = Array.from(block.querySelectorAll(".content-card"));
+  const graphs = Array.from(block.querySelectorAll(".piper-guided-graph"));
+
+  function setStep(stepIndex) {
+    // Update text cards
+    cards.forEach(card => {
+      const cardStep = Number(card.dataset.step);
+      if (cardStep === stepIndex) {
+        card.classList.add("active");
+      } else {
+        card.classList.remove("active");
+      }
+    });
+
+    // Update graphs
+    graphs.forEach(graph => {
+      const graphStep = Number(graph.dataset.step);
+      if (graphStep === stepIndex) {
+        graph.style.display = "block";
+      } else {
+        graph.style.display = "none";
+      }
+    });
+  }
+
+  // Initial state: US
+  setStep(0);
+
+  // Attach listeners to the C-block nav buttons
+  const navButtons = block.querySelectorAll('.nav-btn[data-section="piper-block-c"]');
+
+  navButtons.forEach(button => {
+    button.addEventListener("click", (event) => {
+      const targetStep = button.dataset.targetStep;
+      if (targetStep !== undefined) {
+        event.preventDefault(); // we are handling the navigation here
+        setStep(Number(targetStep));
+      }
+      // If there is NO data-target-step, we let your existing scroll logic handle it
+    });
+  });
+}
+
+// Call this on load
+document.addEventListener("DOMContentLoaded", () => {
+  setupPiperBlockC();
+});
+
