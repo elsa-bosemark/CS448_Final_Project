@@ -37,6 +37,12 @@
             margin-bottom: 0;
             max-width: 100%;
             overflow: visible;
+            align-items: start;
+        }
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
         .chart-container {
             background: #fafafa;
@@ -180,15 +186,21 @@
                 <label for="obesityFilter">Min Obesity Rate: <span id="obesityValue">0%</span></label>
                 <input type="range" id="obesityFilter" min="0" max="45" value="0" step="1">
             </div>
+            <div class="control-group">
+                <label for="sizeByIncome">
+                    <input type="checkbox" id="sizeByIncome" style="width: auto; margin-right: 5px;">
+                    Size by Income
+                </label>
+            </div>
         </div>
 
         <div class="dashboard">
             <div class="chart-container">
-                <div class="chart-title">GLP-1 Prescriptions vs. Obesity Rate by State</div>
+                <div class="chart-title">GLP-1 Prescriptions vs. Obesity Rate by State <span id="sizeNote" style="font-size: 12px; font-weight: normal; color: #666;"></span></div>
                 <svg id="scatterplot"></svg>
                 <div class="legend" id="legend"></div>
             </div>
-            <div>
+            <div class="right-panel">
                 <div class="state-info" id="stateInfo">
                     <h2>Select a state</h2>
                     <p>Click on any state dot in the chart to view detailed information</p>
@@ -204,308 +216,58 @@
     <div class="tooltip" id="tooltip"></div>
 
     <script>
-        // VERIFIED DATA - All 50 states
+        // VERIFIED DATA - All 50 states (2023 ACS median household income from U.S. Census Bureau)
         const rawData = [
-  {
-    "State": "Kentucky",
-    "GLP1_Per_1000": 20.7,
-    "Obesity_Rate": 40.0,
-    "Region": "South"
-  },
-  {
-    "State": "West Virginia",
-    "GLP1_Per_1000": 18.9,
-    "Obesity_Rate": 41.2,
-    "Region": "South"
-  },
-  {
-    "State": "Alaska",
-    "GLP1_Per_1000": 17.5,
-    "Obesity_Rate": 33.6,
-    "Region": "West"
-  },
-  {
-    "State": "Mississippi",
-    "GLP1_Per_1000": 16.1,
-    "Obesity_Rate": 40.1,
-    "Region": "South"
-  },
-  {
-    "State": "Louisiana",
-    "GLP1_Per_1000": 15.4,
-    "Obesity_Rate": 38.1,
-    "Region": "South"
-  },
-  {
-    "State": "Tennessee",
-    "GLP1_Per_1000": 13.8,
-    "Obesity_Rate": 37.6,
-    "Region": "South"
-  },
-  {
-    "State": "Alabama",
-    "GLP1_Per_1000": 13.4,
-    "Obesity_Rate": 39.9,
-    "Region": "South"
-  },
-  {
-    "State": "Idaho",
-    "GLP1_Per_1000": 13.3,
-    "Obesity_Rate": 32.8,
-    "Region": "West"
-  },
-  {
-    "State": "Arkansas",
-    "GLP1_Per_1000": 13.3,
-    "Obesity_Rate": 38.2,
-    "Region": "South"
-  },
-  {
-    "State": "North Dakota",
-    "GLP1_Per_1000": 13.2,
-    "Obesity_Rate": 34.7,
-    "Region": "Midwest"
-  },
-  {
-    "State": "Georgia",
-    "GLP1_Per_1000": 12.5,
-    "Obesity_Rate": 35.5,
-    "Region": "South"
-  },
-  {
-    "State": "Iowa",
-    "GLP1_Per_1000": 12.0,
-    "Obesity_Rate": 36.5,
-    "Region": "Midwest"
-  },
-  {
-    "State": "South Dakota",
-    "GLP1_Per_1000": 11.9,
-    "Obesity_Rate": 34.1,
-    "Region": "Midwest"
-  },
-  {
-    "State": "Texas",
-    "GLP1_Per_1000": 11.6,
-    "Obesity_Rate": 35.8,
-    "Region": "South"
-  },
-  {
-    "State": "Kansas",
-    "GLP1_Per_1000": 11.4,
-    "Obesity_Rate": 35.6,
-    "Region": "Midwest"
-  },
-  {
-    "State": "North Carolina",
-    "GLP1_Per_1000": 11.0,
-    "Obesity_Rate": 34.1,
-    "Region": "South"
-  },
-  {
-    "State": "Vermont",
-    "GLP1_Per_1000": 10.4,
-    "Obesity_Rate": 28.4,
-    "Region": "Northeast"
-  },
-  {
-    "State": "Michigan",
-    "GLP1_Per_1000": 10.0,
-    "Obesity_Rate": 36.0,
-    "Region": "Midwest"
-  },
-  {
-    "State": "Pennsylvania",
-    "GLP1_Per_1000": 9.7,
-    "Obesity_Rate": 33.0,
-    "Region": "Northeast"
-  },
-  {
-    "State": "Wyoming",
-    "GLP1_Per_1000": 9.5,
-    "Obesity_Rate": 29.5,
-    "Region": "West"
-  },
-  {
-    "State": "Oklahoma",
-    "GLP1_Per_1000": 9.1,
-    "Obesity_Rate": 37.1,
-    "Region": "South"
-  },
-  {
-    "State": "South Carolina",
-    "GLP1_Per_1000": 9.1,
-    "Obesity_Rate": 35.4,
-    "Region": "South"
-  },
-  {
-    "State": "Delaware",
-    "GLP1_Per_1000": 8.9,
-    "Obesity_Rate": 37.8,
-    "Region": "South"
-  },
-  {
-    "State": "Indiana",
-    "GLP1_Per_1000": 8.8,
-    "Obesity_Rate": 36.6,
-    "Region": "Midwest"
-  },
-  {
-    "State": "Ohio",
-    "GLP1_Per_1000": 8.5,
-    "Obesity_Rate": 35.5,
-    "Region": "Midwest"
-  },
-  {
-    "State": "New York",
-    "GLP1_Per_1000": 8.4,
-    "Obesity_Rate": 28.0,
-    "Region": "Northeast"
-  },
-  {
-    "State": "Montana",
-    "GLP1_Per_1000": 8.2,
-    "Obesity_Rate": 27.8,
-    "Region": "West"
-  },
-  {
-    "State": "Nebraska",
-    "GLP1_Per_1000": 8.1,
-    "Obesity_Rate": 35.2,
-    "Region": "Midwest"
-  },
-  {
-    "State": "Maine",
-    "GLP1_Per_1000": 8.1,
-    "Obesity_Rate": 31.3,
-    "Region": "Northeast"
-  },
-  {
-    "State": "Missouri",
-    "GLP1_Per_1000": 8.0,
-    "Obesity_Rate": 35.3,
-    "Region": "Midwest"
-  },
-  {
-    "State": "Virginia",
-    "GLP1_Per_1000": 7.6,
-    "Obesity_Rate": 32.2,
-    "Region": "South"
-  },
-  {
-    "State": "Washington",
-    "GLP1_Per_1000": 7.3,
-    "Obesity_Rate": 29.5,
-    "Region": "West"
-  },
-  {
-    "State": "Maryland",
-    "GLP1_Per_1000": 7.2,
-    "Obesity_Rate": 33.4,
-    "Region": "South"
-  },
-  {
-    "State": "New Hampshire",
-    "GLP1_Per_1000": 7.2,
-    "Obesity_Rate": 29.3,
-    "Region": "Northeast"
-  },
-  {
-    "State": "Florida",
-    "GLP1_Per_1000": 7.1,
-    "Obesity_Rate": 29.7,
-    "Region": "South"
-  },
-  {
-    "State": "Oregon",
-    "GLP1_Per_1000": 6.7,
-    "Obesity_Rate": 31.4,
-    "Region": "West"
-  },
-  {
-    "State": "New Jersey",
-    "GLP1_Per_1000": 6.6,
-    "Obesity_Rate": 28.2,
-    "Region": "Northeast"
-  },
-  {
-    "State": "Connecticut",
-    "GLP1_Per_1000": 5.8,
-    "Obesity_Rate": 28.6,
-    "Region": "Northeast"
-  },
-  {
-    "State": "Illinois",
-    "GLP1_Per_1000": 5.8,
-    "Obesity_Rate": 33.5,
-    "Region": "Midwest"
-  },
-  {
-    "State": "Minnesota",
-    "GLP1_Per_1000": 5.8,
-    "Obesity_Rate": 29.8,
-    "Region": "Midwest"
-  },
-  {
-    "State": "Utah",
-    "GLP1_Per_1000": 5.7,
-    "Obesity_Rate": 26.0,
-    "Region": "West"
-  },
-  {
-    "State": "Nevada",
-    "GLP1_Per_1000": 5.7,
-    "Obesity_Rate": 29.1,
-    "Region": "West"
-  },
-  {
-    "State": "California",
-    "GLP1_Per_1000": 5.5,
-    "Obesity_Rate": 28.0,
-    "Region": "West"
-  },
-  {
-    "State": "New Mexico",
-    "GLP1_Per_1000": 5.3,
-    "Obesity_Rate": 32.9,
-    "Region": "West"
-  },
-  {
-    "State": "Colorado",
-    "GLP1_Per_1000": 5.1,
-    "Obesity_Rate": 24.9,
-    "Region": "West"
-  },
-  {
-    "State": "Arizona",
-    "GLP1_Per_1000": 5.1,
-    "Obesity_Rate": 31.4,
-    "Region": "West"
-  },
-  {
-    "State": "Wisconsin",
-    "GLP1_Per_1000": 4.3,
-    "Obesity_Rate": 33.9,
-    "Region": "Midwest"
-  },
-  {
-    "State": "Hawaii",
-    "GLP1_Per_1000": 4.3,
-    "Obesity_Rate": 24.5,
-    "Region": "West"
-  },
-  {
-    "State": "Massachusetts",
-    "GLP1_Per_1000": 4.0,
-    "Obesity_Rate": 26.8,
-    "Region": "Northeast"
-  },
-  {
-    "State": "Rhode Island",
-    "GLP1_Per_1000": 3.7,
-    "Obesity_Rate": 30.1,
-    "Region": "Northeast"
-  }
+  {"State": "Kentucky", "GLP1_Per_1000": 20.7, "Obesity_Rate": 40.0, "Region": "South", "Income": 61118},
+  {"State": "West Virginia", "GLP1_Per_1000": 18.9, "Obesity_Rate": 41.2, "Region": "South", "Income": 55948},
+  {"State": "Alaska", "GLP1_Per_1000": 17.5, "Obesity_Rate": 33.6, "Region": "West", "Income": 86631},
+  {"State": "Mississippi", "GLP1_Per_1000": 16.1, "Obesity_Rate": 40.1, "Region": "South", "Income": 54203},
+  {"State": "Louisiana", "GLP1_Per_1000": 15.4, "Obesity_Rate": 38.1, "Region": "South", "Income": 58229},
+  {"State": "Tennessee", "GLP1_Per_1000": 13.8, "Obesity_Rate": 37.6, "Region": "South", "Income": 67631},
+  {"State": "Alabama", "GLP1_Per_1000": 13.4, "Obesity_Rate": 39.9, "Region": "South", "Income": 62212},
+  {"State": "Idaho", "GLP1_Per_1000": 13.3, "Obesity_Rate": 32.8, "Region": "West", "Income": 74942},
+  {"State": "Arkansas", "GLP1_Per_1000": 13.3, "Obesity_Rate": 38.2, "Region": "South", "Income": 58700},
+  {"State": "North Dakota", "GLP1_Per_1000": 13.2, "Obesity_Rate": 34.7, "Region": "Midwest", "Income": 76525},
+  {"State": "Georgia", "GLP1_Per_1000": 12.5, "Obesity_Rate": 35.5, "Region": "South", "Income": 74632},
+  {"State": "Iowa", "GLP1_Per_1000": 12.0, "Obesity_Rate": 36.5, "Region": "Midwest", "Income": 71433},
+  {"State": "South Dakota", "GLP1_Per_1000": 11.9, "Obesity_Rate": 34.1, "Region": "Midwest", "Income": 71810},
+  {"State": "Texas", "GLP1_Per_1000": 11.6, "Obesity_Rate": 35.8, "Region": "South", "Income": 75780},
+  {"State": "Kansas", "GLP1_Per_1000": 11.4, "Obesity_Rate": 35.6, "Region": "Midwest", "Income": 70333},
+  {"State": "North Carolina", "GLP1_Per_1000": 11.0, "Obesity_Rate": 34.1, "Region": "South", "Income": 70804},
+  {"State": "Vermont", "GLP1_Per_1000": 10.4, "Obesity_Rate": 28.4, "Region": "Northeast", "Income": 81211},
+  {"State": "Michigan", "GLP1_Per_1000": 10.0, "Obesity_Rate": 36.0, "Region": "Midwest", "Income": 69183},
+  {"State": "Pennsylvania", "GLP1_Per_1000": 9.7, "Obesity_Rate": 33.0, "Region": "Northeast", "Income": 73824},
+  {"State": "Wyoming", "GLP1_Per_1000": 9.5, "Obesity_Rate": 29.5, "Region": "West", "Income": 72415},
+  {"State": "Oklahoma", "GLP1_Per_1000": 9.1, "Obesity_Rate": 37.1, "Region": "South", "Income": 62138},
+  {"State": "South Carolina", "GLP1_Per_1000": 9.1, "Obesity_Rate": 35.4, "Region": "South", "Income": 67804},
+  {"State": "Delaware", "GLP1_Per_1000": 8.9, "Obesity_Rate": 37.8, "Region": "South", "Income": 81361},
+  {"State": "Indiana", "GLP1_Per_1000": 8.8, "Obesity_Rate": 36.6, "Region": "Midwest", "Income": 69477},
+  {"State": "Ohio", "GLP1_Per_1000": 8.5, "Obesity_Rate": 35.5, "Region": "Midwest", "Income": 67769},
+  {"State": "New York", "GLP1_Per_1000": 8.4, "Obesity_Rate": 28.0, "Region": "Northeast", "Income": 82095},
+  {"State": "Montana", "GLP1_Per_1000": 8.2, "Obesity_Rate": 27.8, "Region": "West", "Income": 70804},
+  {"State": "Nebraska", "GLP1_Per_1000": 8.1, "Obesity_Rate": 35.2, "Region": "Midwest", "Income": 74590},
+  {"State": "Maine", "GLP1_Per_1000": 8.1, "Obesity_Rate": 31.3, "Region": "Northeast", "Income": 73733},
+  {"State": "Missouri", "GLP1_Per_1000": 8.0, "Obesity_Rate": 35.3, "Region": "Midwest", "Income": 68545},
+  {"State": "Virginia", "GLP1_Per_1000": 7.6, "Obesity_Rate": 32.2, "Region": "South", "Income": 89931},
+  {"State": "Washington", "GLP1_Per_1000": 7.3, "Obesity_Rate": 29.5, "Region": "West", "Income": 94605},
+  {"State": "Maryland", "GLP1_Per_1000": 7.2, "Obesity_Rate": 33.4, "Region": "South", "Income": 98678},
+  {"State": "New Hampshire", "GLP1_Per_1000": 7.2, "Obesity_Rate": 29.3, "Region": "Northeast", "Income": 96838},
+  {"State": "Florida", "GLP1_Per_1000": 7.1, "Obesity_Rate": 29.7, "Region": "South", "Income": 73311},
+  {"State": "Oregon", "GLP1_Per_1000": 6.7, "Obesity_Rate": 31.4, "Region": "West", "Income": 80160},
+  {"State": "New Jersey", "GLP1_Per_1000": 6.6, "Obesity_Rate": 28.2, "Region": "Northeast", "Income": 99781},
+  {"State": "Connecticut", "GLP1_Per_1000": 5.8, "Obesity_Rate": 28.6, "Region": "Northeast", "Income": 91665},
+  {"State": "Illinois", "GLP1_Per_1000": 5.8, "Obesity_Rate": 33.5, "Region": "Midwest", "Income": 80306},
+  {"State": "Minnesota", "GLP1_Per_1000": 5.8, "Obesity_Rate": 29.8, "Region": "Midwest", "Income": 85086},
+  {"State": "Utah", "GLP1_Per_1000": 5.7, "Obesity_Rate": 26.0, "Region": "West", "Income": 93421},
+  {"State": "Nevada", "GLP1_Per_1000": 5.7, "Obesity_Rate": 29.1, "Region": "West", "Income": 76364},
+  {"State": "California", "GLP1_Per_1000": 5.5, "Obesity_Rate": 28.0, "Region": "West", "Income": 95521},
+  {"State": "New Mexico", "GLP1_Per_1000": 5.3, "Obesity_Rate": 32.9, "Region": "West", "Income": 62268},
+  {"State": "Colorado", "GLP1_Per_1000": 5.1, "Obesity_Rate": 24.9, "Region": "West", "Income": 92911},
+  {"State": "Arizona", "GLP1_Per_1000": 5.1, "Obesity_Rate": 31.4, "Region": "West", "Income": 77315},
+  {"State": "Wisconsin", "GLP1_Per_1000": 4.3, "Obesity_Rate": 33.9, "Region": "Midwest", "Income": 74631},
+  {"State": "Hawaii", "GLP1_Per_1000": 4.3, "Obesity_Rate": 24.5, "Region": "West", "Income": 95322},
+  {"State": "Massachusetts", "GLP1_Per_1000": 4.0, "Obesity_Rate": 26.8, "Region": "Northeast", "Income": 99858},
+  {"State": "Rhode Island", "GLP1_Per_1000": 3.7, "Obesity_Rate": 30.1, "Region": "Northeast", "Income": 84972}
 ];
 
         // Set up dimensions - responsive
@@ -536,6 +298,7 @@
 
         let selectedState = null;
         let filteredData = rawData;
+        let sizeByIncome = false;
 
         // Scatterplot
         function createScatterplot() {
@@ -581,13 +344,18 @@
             // Data points
             const tooltip = d3.select('#tooltip');
 
+            // Income scale for bubble size
+            const incomeScale = d3.scaleSqrt()
+                .domain([d3.min(filteredData, d => d.Income), d3.max(filteredData, d => d.Income)])
+                .range([5, 15]);
+
             svg.selectAll('circle')
                 .data(filteredData)
                 .enter()
                 .append('circle')
                 .attr('cx', d => x(d.Obesity_Rate))
                 .attr('cy', d => y(d.GLP1_Per_1000))
-                .attr('r', 8)
+                .attr('r', d => sizeByIncome ? incomeScale(d.Income) : 8)
                 .attr('fill', d => regionColors[d.Region])
                 .attr('opacity', 0.7)
                 .classed('selected', d => d === selectedState)
@@ -597,6 +365,7 @@
                         .html(`<strong>${d.State}</strong><br/>
                                Obesity: ${d.Obesity_Rate}%<br/>
                                GLP-1: ${d.GLP1_Per_1000} per 1,000<br/>
+                               Median Income: $${d.Income.toLocaleString()}<br/>
                                Region: ${d.Region}`)
                         .style('left', (event.pageX + 10) + 'px')
                         .style('top', (event.pageY - 10) + 'px');
@@ -671,6 +440,10 @@
                     <span class="stat-value">${state.GLP1_Per_1000} per 1,000</span>
                 </div>
                 <div class="stat">
+                    <span class="stat-label">Median Household Income</span>
+                    <span class="stat-value">$${state.Income.toLocaleString()}</span>
+                </div>
+                <div class="stat">
                     <span class="stat-label">Region</span>
                     <span class="stat-value">${state.Region}</span>
                 </div>
@@ -692,6 +465,12 @@
             if (region !== 'all') {
                 filteredData = filteredData.filter(d => d.Region === region);
             }
+            updateCharts();
+        });
+
+        d3.select('#sizeByIncome').on('change', function() {
+            sizeByIncome = this.checked;
+            d3.select('#sizeNote').text(sizeByIncome ? '(circle size = median income)' : '');
             updateCharts();
         });
 
