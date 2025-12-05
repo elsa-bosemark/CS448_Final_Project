@@ -48,7 +48,7 @@ function updateChartFromControls() {
 }
 
 const state = {
-  'global-patterns': { step: 0, totalSteps: 6 },
+  'global-patterns': { step: 0, totalSteps: 3 },
   'combined-question': { step: 0, totalSteps: 2 },
   bridge: { step: 0, totalSteps: 1 },
   inactivity: { step: 0, totalSteps: 5 },
@@ -109,8 +109,15 @@ function updateChart(sectionKey, step) {
     case 'global-patterns':
       // Show/hide graphs based on current step
       const globalGraphs = document.querySelectorAll('#global-patterns-section .piper-guided-graph');
+      // Map steps to graph indices: step 0 & 1 show graph 1 (country trends), step 2 shows graph 5 (full explorer)
+      const graphIndexMap = {
+        0: 1,  // Show country trends click to explore (has play button)
+        1: 1,  // Keep showing same graph so users can continue exploring
+        2: 5   // Show full explorer
+      };
+      const targetGraphIndex = graphIndexMap[step];
       globalGraphs.forEach((graph, index) => {
-        if (index === step) {
+        if (index === targetGraphIndex) {
           graph.style.display = 'block';
         } else {
           graph.style.display = 'none';
