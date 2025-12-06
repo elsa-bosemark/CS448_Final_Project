@@ -52,7 +52,7 @@ const state = {
   'combined-question': { step: 0, totalSteps: 2 },
   bridge: { step: 0, totalSteps: 1 },
   inactivity: { step: 0, totalSteps: 5 },
-  glp1: { step: 0, totalSteps: 2 }
+  glp1: { step: 0, totalSteps: 1 }
 };
 
 // Preset configurations for each step of the unified chart

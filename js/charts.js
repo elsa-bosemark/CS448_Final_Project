@@ -1463,11 +1463,10 @@ export function toggleHighlight(population) {
   createUnifiedInteractiveChart('inactivity-chart');
 }
 
-// Create obesity/diabetes decline chart
+// Create obesity decline chart
 export function createObesityDeclineChart(containerId) {
   // Use data from data.js
   const obesityData = usObesityDiabetesData.obesity;
-  const diabetesData = usObesityDiabetesData.diabetes;
 
   const container = d3.select(`#${containerId}`);
   container.selectAll('*').remove();
@@ -1527,13 +1526,8 @@ export function createObesityDeclineChart(containerId) {
     .attr('stroke', '#e2e8f0')
     .attr('stroke-dasharray', '2,2');
 
-  // Line generators
+  // Line generator
   const obesityLine = d3.line()
-    .x(d => xScale(d.year))
-    .y(d => yScale(d.value))
-    .curve(d3.curveMonotoneX);
-
-  const diabetesLine = d3.line()
     .x(d => xScale(d.year))
     .y(d => yScale(d.value))
     .curve(d3.curveMonotoneX);
@@ -1545,14 +1539,6 @@ export function createObesityDeclineChart(containerId) {
     .attr('stroke', '#f97316')
     .attr('stroke-width', 3)
     .attr('d', obesityLine);
-
-  // Draw diabetes line
-  svg.append('path')
-    .datum(diabetesData)
-    .attr('fill', 'none')
-    .attr('stroke', '#3b82f6')
-    .attr('stroke-width', 3)
-    .attr('d', diabetesLine);
 
   // Add dots for obesity data
   svg.selectAll('.obesity-dot')
@@ -1568,29 +1554,6 @@ export function createObesityDeclineChart(containerId) {
       d3.select(this).attr('r', 6);
       globalTooltip
         .html(`<strong>${d.year}</strong><br/>Obesity: ${d.value}%`)
-        .style('left', (event.pageX + 10) + 'px')
-        .style('top', (event.pageY - 10) + 'px')
-        .classed('visible', true);
-    })
-    .on('mouseout', function() {
-      d3.select(this).attr('r', 4);
-      globalTooltip.classed('visible', false);
-    });
-
-  // Add dots for diabetes data
-  svg.selectAll('.diabetes-dot')
-    .data(diabetesData)
-    .join('circle')
-    .attr('class', 'diabetes-dot')
-    .attr('cx', d => xScale(d.year))
-    .attr('cy', d => yScale(d.value))
-    .attr('r', 4)
-    .attr('fill', '#3b82f6')
-    .style('cursor', 'pointer')
-    .on('mouseover', function(event, d) {
-      d3.select(this).attr('r', 6);
-      globalTooltip
-        .html(`<strong>${d.year}</strong><br/>Diabetes: ${d.value}%`)
         .style('left', (event.pageX + 10) + 'px')
         .style('top', (event.pageY - 10) + 'px')
         .classed('visible', true);
@@ -1644,22 +1607,6 @@ export function createObesityDeclineChart(containerId) {
     .attr('font-size', '13px')
     .attr('fill', '#1f2937')
     .text('Obesity');
-
-  legend.append('line')
-    .attr('x1', 0)
-    .attr('x2', 30)
-    .attr('y1', 25)
-    .attr('y2', 25)
-    .attr('stroke', '#3b82f6')
-    .attr('stroke-width', 3);
-
-  legend.append('text')
-    .attr('x', 35)
-    .attr('y', 25)
-    .attr('dominant-baseline', 'middle')
-    .attr('font-size', '13px')
-    .attr('fill', '#1f2937')
-    .text('Diabetes');
 
   // Axis labels
   svg.append('text')
