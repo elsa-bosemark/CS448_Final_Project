@@ -815,12 +815,12 @@ export function createMultiCountryTrend(containerId, selectedCountries = ['Unite
 
 // Variable mapping for the unified chart
 const varMapping = {
-  'TEE': { male: 'TEE_M', female: 'TEE_F', label: 'TEE (MJ/day)', tooltip: 'Total Energy Expenditure in megajoules per day' },
-  'PAL': { male: 'PAL_M', female: 'PAL_F', label: 'PAL', tooltip: 'Physical Activity Level ratio' },
-  'PercUPF': { male: 'PercUPF', female: 'PercUPF', label: 'UPF (%)', tooltip: 'Percentage of energy from ultra-processed foods' },
-  'Fat': { male: 'Fat_M', female: 'Fat_F', label: 'Body Fat (%)', tooltip: 'Body fat percentage' },
-  'Economy_Type': { male: 'Economy', female: 'Economy', label: 'Economy Type', tooltip: 'Economy type classification based on HDI and subsistence strategy' },
-  'HDI_rank': { male: 'HDI_rank', female: 'HDI_rank', label: 'HDI Rank', tooltip: 'Human Development Index ranking (lower is better)' }
+  'TEE': { male: 'TEE_M', female: 'TEE_F', label: 'Total Energy Expenditure in megajoules per day', tooltip: 'Measured using the doubly labeled water method. Values are population averages reported in the PNAS cross cultural energy expenditure study' },
+  'PAL': { male: 'PAL_M', female: 'PAL_F', label: 'Physical Activity Level ratio', tooltip: 'Calculated as total energy expenditure divided by basal metabolic rate. Both measurements come from the doubly labeled water dataset' },
+  'PercUPF': { male: 'PercUPF', female: 'PercUPF', label: 'Percentage of energy from ultra-processed foods', tooltip: 'Share of total dietary energy derived from ultra-processed foods. Values come from published dietary assessments for each population in the PNAS dataset' },
+  'Fat': { male: 'Fat_M', female: 'Fat_F', label: 'Body fat percentage', tooltip: 'Estimated from anthropometric measures collected in each population sample. Reported as population means in the PNAS study' },
+  'Economy_Type': { male: 'Economy', female: 'Economy', label: 'Economy Type', tooltip: 'Population classification taken from the PNAS study to reflect differences in lifestyle, market integration, and subsistence patterns' },
+  'HDI_rank': { male: 'HDI_rank', female: 'HDI_rank', label: 'Human Development Index ranking', tooltip: 'United Nations HDI ranking for each population’s country. Lower rank indicates higher development' }
 };
 
 export function createUnifiedInteractiveChart(containerId) {

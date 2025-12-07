@@ -51,7 +51,7 @@ const state = {
   'global-patterns': { step: 0, totalSteps: 2 },
   'combined-question': { step: 0, totalSteps: 2 },
   bridge: { step: 0, totalSteps: 1 },
-  inactivity: { step: 0, totalSteps: 3 },
+  inactivity: { step: 0, totalSteps: 4 },
   glp1: { step: 0, totalSteps: 1 }
 };
 
