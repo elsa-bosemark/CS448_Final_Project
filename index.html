@@ -474,9 +474,8 @@
               <h4 class="card-title">Explore the data</h4>
               <p class="card-text">
                 You can change both the x and y axes to test how any two variables relate. When you switch axes, check
-                three things: whether the regression is statistically significant, whether the slope goes up or down,
-                and how spread out the points are around the line. Tight clusters mean the variables align closely. Wide
-                scatter means the relationship is weak even if the line is significant.
+                three things: whether the relationship is statistically significant (p values is less than 0.05), whether
+                the line goes up or down, and how spread out the points are around the line.
               </p>
               <p class="card-text">
                 Try pairing different x and y axes and ask yourself what each comparison reveals. </br>
@@ -486,7 +485,7 @@
                 • TEE vs PAL</br>
                 Does burning more total energy actually mean being more physically active?</br>
                 • Economy Type vs Any Metric</br>
-                Which economic groups consistently sit above or below the trend line? Where do you see the most or least variance within a Economy Type?
+                Where do you see the most or least variance within a Economy Type?
               </p>
               <div class="nav-buttons">
                 <button class="nav-btn prev-btn" data-section="inactivity-section">← Previous</button>
@@ -576,10 +575,7 @@
                 The steepest reductions in obesity are occurring in the very age groups with the highest GLP-1 usage
                 (ages 40–64),suggesting these medications may be contributing to the first sustained population-level
                 decline in U.S <a href="#glp1-source-14" class="footnote-link">[14]</a>.
-                obesity rates. But understanding why GLP-1s are so effective requires looking at the biological pathway
-                they target -
-                the same energy-regulation circuitry disrupted by ultra-processed foods and, in rare cases, by genetic
-                mutations.
+                obesity rates.
               </p>
 
               <div class="nav-buttons">
@@ -693,7 +689,7 @@
 
       <div class="conclusion-content" style="margin-top: 40px;">
         <p class="conclusion-text">
-          This underscores a crucial role for government intervention: expanding access to GLP-1 medications in
+          This emphasis a crucial role for government intervention: expanding access to GLP-1 medications in
           high-obesity regions should be a policy priority. If we understand obesity as a biological dysfunction
           caused by environmental factors (namely, UPF-dominated food environments), then treating it requires
           systemic solutions that include making effective medications accessible
@@ -723,8 +719,8 @@
         </p>
 
         <p class="conclusion-text">
-          This underscores the importance of policy action when it comes to our food system. While expanding access to
-          GLP-1 medications is a vital public health intervention, it must be paired with efforts to address the root
+          This emphasis the importance of policy action when it comes to our food system. While expanding access to
+          GLP-1 medications is a crucial public health intervention, it must be paired with efforts to address the root
           cause: the pervasive availability and
           aggressive marketing of ultra-processed foods that makes unhealthy eating the default choice. Policy solutions
           should
@@ -732,7 +728,15 @@
           regulating misleading health claims on processed
           foods, and incentivizing the production and accessibility of whole, minimally processed foods.
         </p>
-
+        <p class="conclusion-text">
+          Across this report, we challenged the familiar assumption that obesity is a failure to exercise and showed
+          that, when we compare physical activity across populations, activity levels do not strongly predict
+          differences in
+          body fat. Instead, we saw how UPF align far more closely with body fat patterns and how the
+          recent U.S. decline in obesity lines up with the spread of GLP-1 drugs that target the brain circuits UPFs
+          disrupt. By exploring these relationships, we see that understanding obesity requires looking beyond
+          individual effort and toward the biological and environmental forces that shape our behaviors and bodies.
+        </p>
         <h2 class="conclusion-heading">Sources</h2>
 
         <p class="sources-text" id="source-1">
@@ -881,7 +885,7 @@
 
   <script type="module" src="./js/data.js"></script>
   <!-- index.html -->
-<script src="https://unpkg.com/simple-statistics@7.8.8/dist/simple-statistics.min.js"></script>
+  <script src="https://unpkg.com/simple-statistics@7.8.8/dist/simple-statistics.min.js"></script>
 
   <script type="module" src="./js/charts.js"></script>
   <script type="module" src="./js/scroll.js"></script>
