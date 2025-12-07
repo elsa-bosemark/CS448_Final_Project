@@ -1,9 +1,8 @@
 import { countryData, obesityTrends, topObeseCountries, getObesityForYear, trendYears, PAL_TEE_UPF_HDI_Data_Elsa, usObesityDiabetesData } from './data.js';
 // import { linearRegression, linearRegressionLine } from 'simple-statistics';
-import {
-  linearRegression,
-  linearRegressionLine
-} from "https://cdn.jsdelivr.net/npm/simple-statistics@7.8.0/dist/simple-statistics.esm.min.js";
+
+import { linearRegression, linearRegressionLine } from "https://cdn.jsdelivr.net/npm/simple-statistics@7.8.0/dist/simple-statistics.esm.min.js";
+
 
 
 // Calculate comprehensive regression statistics (R², F-statistic, p-value, slope, intercept)
@@ -1821,5 +1820,4 @@ export function createObesityDeclineChart(containerId) {
     .attr('fill', '#64748b')
     .text('Percentage of U.S. Adults (%)');
 }
-
 
